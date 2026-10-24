@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>StreamLink — Live Stage, Colors, Recording & Flip Camera</title>
+<title>StreamLink — Pro Filters, Camera Flip & Live Stage</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
   :root{
@@ -125,25 +125,13 @@
     display:flex;gap:10px;overflow-x:auto;padding:4px;scrollbar-width:none;
     transition:bottom .22s ease}
   .tiles-strip::-webkit-scrollbar{display:none}
-  .stage.filters-open .tiles-strip{bottom:176px}
+  .stage.filters-open .tiles-strip{bottom:196px}
 
   .tile{position:relative;flex-shrink:0;width:140px;aspect-ratio:1;border-radius:16px;
     overflow:hidden;background:#0b0f16;border:1px solid var(--border);
     box-shadow:0 12px 30px rgba(0,0,0,.5);transition:border-color .2s}
-  .tile video{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .25s}
+  .tile video{width:100%;height:100%;object-fit:cover;display:block}
   .tile.radio video{opacity:0}
-  .tile .tile-eq{position:absolute;inset:0;display:none;align-items:flex-end;justify-content:center;
-    gap:4px;padding:16px;background:linear-gradient(160deg,#14203a,#0a0e16)}
-  .tile.radio .tile-eq{display:flex}
-  .tile .tile-eq span{width:5px;border-radius:3px;height:20%;
-    background:linear-gradient(180deg,var(--accent),var(--accent-2));
-    animation:eq 1s ease-in-out infinite}
-  .tile .tile-eq span:nth-child(1){animation-duration:.9s}
-  .tile .tile-eq span:nth-child(2){animation-duration:1.15s;animation-delay:.12s}
-  .tile .tile-eq span:nth-child(3){animation-duration:.8s;animation-delay:.05s}
-  .tile .tile-eq span:nth-child(4){animation-duration:1.05s;animation-delay:.2s}
-  .tile .tile-eq span:nth-child(5){animation-duration:.95s;animation-delay:.08s}
-  @keyframes eq{0%,100%{height:18%}50%{height:92%}}
   .tile-badge{position:absolute;left:8px;top:8px;display:inline-flex;align-items:center;gap:5px;
     padding:4px 8px;border-radius:999px;background:rgba(5,7,11,.72);border:1px solid rgba(255,255,255,.1);
     font-size:9.5px;font-weight:800;letter-spacing:.8px;color:#fff;
@@ -169,7 +157,6 @@
   .req-actions button{flex:1;padding:8px;border-radius:9px;font-size:12.5px;font-weight:650}
   .req-approve{background:rgba(46,230,168,.18);border:1px solid rgba(46,230,168,.5);color:#7cf0cb}
   .req-deny{background:var(--panel-2);border:1px solid var(--border);color:var(--muted)}
-  .req-approve:hover{background:rgba(46,230,168,.28)}
 
   /* ---------- OVERLAYS ---------- */
   .overlay-top{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;
@@ -219,16 +206,16 @@
 
   /* ---------- FILTER STRIP ---------- */
   .filters-bar{position:absolute;left:0;right:0;bottom:calc(90px + env(safe-area-inset-bottom));
-    z-index:22;padding:10px 14px 12px;display:none;
-    background:linear-gradient(0deg,rgba(5,7,11,.94),rgba(5,7,11,.55),transparent)}
+    z-index:22;padding:12px 14px 14px;display:none;
+    background:linear-gradient(0deg,rgba(5,7,11,.96),rgba(5,7,11,.55),transparent)}
   .filters-bar.open{display:block}
-  .filters-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+  .filters-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
   .filters-scroll::-webkit-scrollbar{display:none}
   .chip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;
     padding:8px 12px 7px;border-radius:13px;background:rgba(23,30,44,.94);
     border:1px solid var(--border);font-size:10.5px;font-weight:700;letter-spacing:.2px;
     color:var(--muted);white-space:nowrap;transition:border-color .16s, background .16s, color .16s}
-  .chip .sw{width:40px;height:26px;border-radius:7px;
+  .chip .sw{width:44px;height:28px;border-radius:7px;
     background:linear-gradient(135deg,#ffb26e,#6ea8ff 46%,#b48cff);display:block}
   .chip.active{border-color:var(--accent);color:#fff;background:rgba(79,140,255,.2)}
 
@@ -252,7 +239,6 @@
   .ctrl.wave{background:rgba(255,214,79,.14);border-color:rgba(255,214,79,.4);color:#ffdf7a}
   .ctrl.wave.on{background:rgba(255,77,106,.2);border-color:rgba(255,77,106,.55);color:#ff8fa2}
   .ctrl.danger{background:linear-gradient(120deg,#e8394f,#ff4d6a);border-color:transparent;color:#fff}
-  .ctrl.danger:hover{filter:brightness(1.1)}
 
   /* ---------- CHAT ---------- */
   .chat{width:344px;flex-shrink:0;display:flex;flex-direction:column;height:100%;
@@ -287,8 +273,6 @@
   .composer input:focus{border-color:var(--accent)}
   .composer button{padding:0 18px;border-radius:13px;font-size:14px;font-weight:650;color:#fff;
     background:linear-gradient(120deg,var(--accent),var(--accent-2));transition:filter .18s, transform .12s}
-  .composer button:hover{filter:brightness(1.1)}
-  .composer button:active{transform:scale(.96)}
   #chatToggle{display:none;align-items:center;justify-content:center;width:40px;height:40px;
     border-radius:12px;font-size:17px;background:rgba(17,22,33,.85);border:1px solid var(--border);
     backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:relative;flex-shrink:0}
@@ -310,14 +294,12 @@
     #boardInput,#boardView{font-size:19px}
     .tiles-strip{left:12px;right:12px;bottom:84px;gap:8px}
     .tile{width:100px;border-radius:12px}
-    .tile .tile-eq{gap:3px;padding:12px}
-    .tile .tile-eq span{width:4px}
     .tile-badge{font-size:8px;padding:3px 6px;left:6px;top:6px}
     .tile-name{font-size:9.5px}
-    .stage.filters-open .tiles-strip{bottom:162px}
-    .filters-bar{bottom:calc(82px + env(safe-area-inset-bottom));padding:8px 10px 10px}
+    .stage.filters-open .tiles-strip{bottom:176px}
+    .filters-bar{bottom:calc(82px + env(safe-area-inset-bottom));padding:10px 10px 12px}
     .chip{padding:7px 10px 6px;font-size:10px}
-    .chip .sw{width:34px;height:22px}
+    .chip .sw{width:36px;height:22px}
     .requests{top:62px;right:12px;width:240px}
     .board-colors{gap:4px}
     .swatch-label{padding:3px 6px;font-size:9px}
@@ -338,8 +320,8 @@
 <div id="landing" class="screen active">
   <div class="card">
     <div class="logo"><span class="dot"></span> StreamLink</div>
-    <h1>Go live from your camera.<br><span>Board colors, flip camera & guests.</span></h1>
-    <p class="sub">Only the admin can start a live. Customize board text & background colors, flip between front and back cameras, record the show as MP4/WebM, and bring up to 8 guests onto the stage.</p>
+    <h1>Go live from your camera.<br><span>Pro filters, flip camera & guests.</span></h1>
+    <p class="sub">Only the admin can start a live. TikTok-style filters are baked into the stream so every viewer sees them. Flip between front and back cameras instantly, record as MP4/WebM, and bring up to 8 guests on stage.</p>
     <button id="btnGoLive" class="btn primary"><span>●</span> Go Live (Admin)</button>
     <div class="divider">or join a live</div>
     <div class="join-row">
@@ -415,7 +397,6 @@
     <div class="tiles-strip" id="tilesStrip">
       <div class="tile host-tile" data-tile="host">
         <video id="hostVideo" playsinline autoplay muted></video>
-        <div class="tile-eq" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
         <div class="tile-badge"><span class="live-dot"></span>HOST</div>
         <div class="tile-name">Host</div>
       </div>
@@ -480,24 +461,157 @@
 
   /* ================= CONFIG ================= */
   const ADMIN_PASSWORD = 'admin123';
-  const ID_PREFIX      = 'streamlink-v6-';
+  const ID_PREFIX      = 'streamlink-v7-';
   const CODE_ALPHABET  = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const CODE_LEN       = 6;
   const MAX_GUESTS     = 8;
   const DEFAULT_TEXT_COLOR = '#e9eefb';
   const DEFAULT_BG_COLOR   = '#0a0d13';
+  const CANVAS_SIZE    = 720;   // square pipeline canvas
+  const TARGET_FPS     = 30;
 
+  /* TikTok-style presets with baked-in beauty (blur overlay) */
   const FILTERS = [
-    { id:'none',    label:'Normal',  css:'none' },
-    { id:'vivid',   label:'Vivid',   css:'saturate(1.55) contrast(1.12)' },
-    { id:'warm',    label:'Warm',    css:'sepia(.22) saturate(1.25) brightness(1.05) hue-rotate(-6deg)' },
-    { id:'cool',    label:'Cool',    css:'saturate(1.1) hue-rotate(14deg) brightness(1.03) contrast(1.05)' },
-    { id:'mono',    label:'B&W',     css:'grayscale(1) contrast(1.12) brightness(1.03)' },
-    { id:'vintage', label:'Vintage', css:'sepia(.55) contrast(1.08) saturate(.85) brightness(1.02)' },
-    { id:'cinema',  label:'Cinema',  css:'contrast(1.22) saturate(.9) brightness(.96) hue-rotate(-8deg)' },
-    { id:'soft',    label:'Soft',    css:'saturate(1.08) brightness(1.09) contrast(.94)' },
-    { id:'noir',    label:'Noir',    css:'grayscale(1) contrast(1.42) brightness(.95)' }
+    { id:'natural', label:'Natural', css:'none',                                                  beauty:0    },
+    { id:'beauty',  label:'Beauty',  css:'brightness(1.06) saturate(1.06)',                       beauty:0.55 },
+    { id:'glow',    label:'Glow',    css:'brightness(1.12) saturate(1.15) contrast(1.04)',        beauty:0.40 },
+    { id:'vivid',   label:'Vivid',   css:'saturate(1.55) contrast(1.12)',                         beauty:0.15 },
+    { id:'pop',     label:'Pop',     css:'saturate(1.85) contrast(1.18) brightness(1.03)',        beauty:0.20 },
+    { id:'warm',    label:'Warm',    css:'sepia(.22) saturate(1.28) brightness(1.06) hue-rotate(-6deg)', beauty:0.25 },
+    { id:'cool',    label:'Cool',    css:'saturate(1.15) hue-rotate(15deg) brightness(1.04) contrast(1.06)', beauty:0.10 },
+    { id:'cinema',  label:'Cinema',  css:'contrast(1.22) saturate(.88) brightness(.96)',          beauty:0    },
+    { id:'film',    label:'Film',    css:'sepia(.35) saturate(1.12) contrast(1.08) brightness(1.04)', beauty:0.20 },
+    { id:'fade',    label:'Fade',    css:'contrast(.88) brightness(1.1) saturate(.88)',           beauty:0.30 },
+    { id:'mono',    label:'Mono',    css:'grayscale(1) contrast(1.15) brightness(1.05)',          beauty:0    },
+    { id:'noir',    label:'Noir',    css:'grayscale(1) contrast(1.5) brightness(.92)',            beauty:0    },
+    { id:'vintage', label:'Vintage', css:'sepia(.55) contrast(1.08) saturate(.85) brightness(1.02)', beauty:0.20 },
+    { id:'dreamy',  label:'Dreamy',  css:'brightness(1.15) saturate(1.12) contrast(.94)',         beauty:0.60 }
   ];
+
+  /* ================= PIPELINE (canvas-based filter) ================= */
+  class FilterPipeline {
+    constructor() {
+      this.video = document.createElement('video');
+      this.video.muted = true;
+      this.video.playsInline = true;
+      this.video.autoplay = true;
+      this.canvas = document.createElement('canvas');
+      this.canvas.width = CANVAS_SIZE;
+      this.canvas.height = CANVAS_SIZE;
+      this.ctx = this.canvas.getContext('2d', { alpha: false });
+      this.filterCss = 'none';
+      this.beauty = 0;
+      this.radioMode = false;
+      this._stream = null;
+      this._raf = null;
+      this._running = false;
+      this._last = 0;
+      this._phase = 0;
+    }
+    async attach(mediaStream) {
+      this.video.srcObject = mediaStream;
+      try { await this.video.play(); } catch (e) {}
+      if (!this._running) { this._running = true; this._loop(); }
+    }
+    setFilter(css, beauty) {
+      this.filterCss = css || 'none';
+      this.beauty = beauty || 0;
+    }
+    setRadioMode(on) { this.radioMode = !!on; }
+    getStream() {
+      if (!this._stream) {
+        if (this.canvas.captureStream) this._stream = this.canvas.captureStream(TARGET_FPS);
+        else if (this.canvas.mozCaptureStream) this._stream = this.canvas.mozCaptureStream(TARGET_FPS);
+        else this._stream = this.video.srcObject;   // fallback (filters not applied)
+      }
+      return this._stream;
+    }
+    _loop() {
+      if (!this._running) return;
+      const now = performance.now();
+      if (now - this._last >= 1000 / TARGET_FPS) {
+        this._last = now;
+        this._draw();
+        this._phase += 0.08;
+      }
+      this._raf = requestAnimationFrame(() => this._loop());
+    }
+    _draw() {
+      const { ctx, canvas, video } = this;
+      const w = canvas.width, h = canvas.height;
+
+      if (this.radioMode) { this._drawRadio(ctx, w, h); return; }
+
+      ctx.fillStyle = '#0a0d13';
+      ctx.fillRect(0, 0, w, h);
+      if (video.readyState < 2 || !video.videoWidth) return;
+
+      const vw = video.videoWidth, vh = video.videoHeight;
+      const scale = Math.max(w / vw, h / vh);
+      const sw = w / scale, sh = h / scale;
+      const sx = (vw - sw) / 2, sy = (vh - sh) / 2;
+
+      ctx.filter = this.filterCss === 'none' ? 'none' : this.filterCss;
+      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+      ctx.filter = 'none';
+
+      if (this.beauty > 0) {
+        ctx.save();
+        ctx.globalAlpha = Math.min(0.6, this.beauty * 0.55);
+        ctx.filter = 'blur(3px) brightness(1.08) saturate(.92)';
+        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+        ctx.restore();
+      }
+    }
+    _drawRadio(ctx, w, h) {
+      const grad = ctx.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0, '#14203a');
+      grad.addColorStop(1, '#0a0e16');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      const bars = 5, bw = Math.round(w * 0.055), gap = Math.round(w * 0.028);
+      const total = bars * bw + (bars - 1) * gap;
+      const startX = (w - total) / 2;
+      const baseY = h / 2 + h * 0.09;
+      const maxH = h * 0.22;
+      for (let i = 0; i < bars; i++) {
+        const phase = this._phase + i * 0.7;
+        const bh = (Math.sin(phase) * 0.4 + 0.6) * maxH;
+        const x = startX + i * (bw + gap);
+        const y = baseY - bh;
+        const bg = ctx.createLinearGradient(0, y, 0, baseY);
+        bg.addColorStop(0, '#8b5cff');
+        bg.addColorStop(1, '#4f8cff');
+        ctx.fillStyle = bg;
+        const r = bw / 2;
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + bw, y, x + bw, y + bh, r);
+        ctx.arcTo(x + bw, y + bh, x, y + bh, r);
+        ctx.arcTo(x, y + bh, x, y, r);
+        ctx.arcTo(x, y, x + bw, y, r);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.fillStyle = 'rgba(255,255,255,.65)';
+      ctx.font = `bold ${Math.round(h * 0.03)}px -apple-system, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('📻 RADIO MODE', w / 2, baseY + h * 0.09);
+      ctx.textAlign = 'left';
+    }
+    stop() {
+      this._running = false;
+      if (this._raf) cancelAnimationFrame(this._raf);
+      this._raf = null;
+      try { this.video.pause(); } catch (e) {}
+      this.video.srcObject = null;
+      if (this._stream) {
+        try { this._stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+        this._stream = null;
+      }
+    }
+  }
 
   /* ================= ELEMENTS ================= */
   const $ = s => document.querySelector(s);
@@ -560,7 +674,12 @@
     role: null,
     code: null,
     peer: null,
-    localStream: null,
+    localStream: null,       // raw host camera
+    pipeline: null,          // host filter pipeline
+    outStream: null,         // filtered video + raw audio
+    guestStream: null,       // raw guest camera
+    guestPipeline: null,
+    guestOutStream: null,
     conns: [],
     calls: [],
     guestRelays: [],
@@ -574,8 +693,9 @@
     boardText: '',
     boardTextColor: DEFAULT_TEXT_COLOR,
     boardBgColor: DEFAULT_BG_COLOR,
-    filterId: 'none',
+    filterId: 'natural',
     filterCss: 'none',
+    filterBeauty: 0,
     torchSupported: false,
     torch: false,
     screenLight: false,
@@ -583,7 +703,6 @@
     isGuest: false,
     myGuestMode: null,
     myGuestName: '',
-    guestStream: null,
     pendingWaveMode: 'camera',
     recording: null,
     facingMode: 'user'
@@ -602,6 +721,17 @@
   const showWaiting = text => { waitingText.textContent = text; waiting.classList.remove('hidden'); };
   const hideWaiting = () => waiting.classList.add('hidden');
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const CAM_CONSTRAINTS = (facing) => ({
+    video: {
+      facingMode: facing,
+      width: { ideal: 1280, max: 1920 },
+      height: { ideal: 720, max: 1080 },
+      frameRate: { ideal: 30, max: 30 },
+      aspectRatio: { ideal: 16 / 9 }
+    },
+    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+  });
 
   /* ================= BOARD STYLE ================= */
   function applyBoardStyle() {
@@ -625,11 +755,6 @@
   });
 
   /* ================= FILTERS ================= */
-  function applyFilter() {
-    const css = state.filterCss === 'none' ? 'none' : state.filterCss;
-    hostVideo.style.filter = css;
-    tilesStrip.querySelectorAll('.tile video').forEach(v => { v.style.filter = css; });
-  }
   function buildFilterChips() {
     filtersScroll.innerHTML = '';
     FILTERS.forEach(f => {
@@ -647,14 +772,21 @@
       filtersScroll.appendChild(chip);
     });
   }
+
   function selectFilter(id) {
     const f = FILTERS.find(x => x.id === id) || FILTERS[0];
     state.filterId = f.id;
     state.filterCss = f.css;
-    applyFilter();
+    state.filterBeauty = f.beauty;
+
+    const p = (state.role === 'host') ? state.pipeline
+            : (state.role === 'viewer' && state.isGuest) ? state.guestPipeline
+            : null;
+    if (p) p.setFilter(f.css, f.beauty);
+
     filtersScroll.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.id === f.id));
-    if (state.role === 'host') broadcast({ type:'filter', id: f.id });
   }
+
   function toggleFiltersBar() {
     state.filtersOpen = !state.filtersOpen;
     filtersBar.classList.toggle('open', state.filtersOpen);
@@ -683,7 +815,8 @@
     updateFlashButton();
   }
   async function toggleFlash() {
-    const track = state.localStream && state.localStream.getVideoTracks()[0];
+    const stream = state.role === 'host' ? state.localStream : state.guestStream;
+    const track = stream && stream.getVideoTracks()[0];
     if (!track) return;
     if (state.torchSupported) {
       const next = !state.torch;
@@ -700,8 +833,9 @@
     toggleScreenLight();
   }
   async function disableFlash() {
-    if (state.torch && state.localStream) {
-      const track = state.localStream.getVideoTracks()[0];
+    const stream = state.role === 'host' ? state.localStream : state.guestStream;
+    if (state.torch && stream) {
+      const track = stream.getVideoTracks()[0];
       if (track) { try { await track.applyConstraints({ advanced: [{ torch: false }] }); } catch (e) {} }
     }
     state.torch = false;
@@ -714,17 +848,23 @@
   async function flipCamera() {
     const isHost = state.role === 'host';
     const stream = isHost ? state.localStream : state.guestStream;
-    if (!stream) return;
+    const pipeline = isHost ? state.pipeline : state.guestPipeline;
+    if (!stream || !pipeline) return;
+
     const oldTrack = stream.getVideoTracks()[0];
     if (!oldTrack) return;
 
     const newFacing = state.facingMode === 'user' ? 'environment' : 'user';
-    const width  = isHost ? 1280 : 640;
-    const height = isHost ? 720  : 480;
-    let newStream;
+
+    let fresh;
     try {
-      newStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: newFacing, width: { ideal: width }, height: { ideal: height } },
+      fresh = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: newFacing,
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 },
+          frameRate: { ideal: 30, max: 30 }
+        },
         audio: false
       });
     } catch (e) {
@@ -732,45 +872,30 @@
       return;
     }
 
-    const newTrack = newStream.getVideoTracks()[0];
+    const newTrack = fresh.getVideoTracks()[0];
     newTrack.enabled = oldTrack.enabled;
 
-    // Swap into local stream (keep audio track)
     const audioTracks = stream.getAudioTracks();
     const rebuilt = new MediaStream([newTrack, ...audioTracks]);
     oldTrack.stop();
+
     if (isHost) state.localStream = rebuilt;
     else        state.guestStream = rebuilt;
 
     state.facingMode = newFacing;
 
-    // Update preview
+    // Reattach source to pipeline — canvas track remains unchanged so no renegotiation
+    await pipeline.attach(rebuilt);
+
+    // Update preview mirror
     if (isHost) {
-      hostVideo.srcObject = rebuilt;
       hostVideo.classList.toggle('mirrored', newFacing === 'user');
-      hostVideo.play().catch(() => {});
       updateTorchSupport(newTrack);
     } else {
-      attachToTile(state.peer.id, rebuilt);
-      const tile = tilesStrip.querySelector(`.tile[data-guestid="${CSS.escape(state.peer.id)}"]`);
-      const v = tile && tile.querySelector('video');
-      if (v) v.classList.toggle('mirrored', newFacing === 'user');
+      const selfVideo = tilesStrip.querySelector(`.tile[data-self="1"] video`);
+      if (selfVideo) selfVideo.classList.toggle('mirrored', newFacing === 'user');
       updateTorchSupport(newTrack);
     }
-
-    // Replace on all outgoing calls that carry our video
-    const targetCalls = isHost
-      ? state.calls
-      : state.calls.filter(c => c._guestId === state.peer.id);
-
-    targetCalls.forEach(call => {
-      try {
-        const pc = call.peerConnection;
-        if (!pc) return;
-        const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
-        if (sender) sender.replaceTrack(newTrack).catch(() => {});
-      } catch (e) {}
-    });
 
     addMessage('Camera: ' + (newFacing === 'user' ? 'front' : 'back'), 'system');
   }
@@ -824,7 +949,7 @@
     soundBtn.classList.toggle('on', state.soundOn);
     soundBtn.textContent = state.soundOn ? '🔊' : '🔇';
     document.querySelectorAll('.tile video').forEach(v => {
-      if (v === hostVideo && state.role === 'host') return;
+      if (v === hostVideo && state.role === 'host') return;   // host preview stays muted
       v.muted = !state.soundOn;
       if (state.soundOn) v.play().catch(() => {});
     });
@@ -849,13 +974,6 @@
         state.boardTextColor = data.textColor || DEFAULT_TEXT_COLOR;
         state.boardBgColor   = data.bgColor   || DEFAULT_BG_COLOR;
         applyBoardStyle();
-      }
-
-    } else if (data.type === 'filter') {
-      if (state.role === 'viewer') {
-        const f = FILTERS.find(x => x.id === data.id) || FILTERS[0];
-        state.filterId = f.id; state.filterCss = f.css;
-        applyFilter();
       }
 
     } else if (data.type === 'count' && state.role === 'viewer') {
@@ -929,14 +1047,13 @@
     const cls = 'tile guest-tile' + (mode === 'radio' ? ' radio' : '');
     return `<div class="${cls}" data-guestid="${esc(id)}"${isSelf ? ' data-self="1"' : ''}>
       <video playsinline autoplay muted></video>
-      <div class="tile-eq" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
       <div class="tile-badge"><span class="live-dot"></span>${isSelf ? 'YOU' : 'GUEST'}</div>
       <div class="tile-name">${esc(name)}</div>
       <button class="tile-remove" title="Remove guest" data-remove="${esc(id)}">×</button>
     </div>`;
   }
   function addGuestTile(id, name, mode, isSelf) {
-    removeGuestTile(id, true);
+    removeGuestTile(id);
     const wrap = document.createElement('div');
     wrap.innerHTML = tileHTML(id, name, mode, isSelf).trim();
     const tile = wrap.firstElementChild;
@@ -947,7 +1064,6 @@
       rm.remove();
     }
     tilesStrip.appendChild(tile);
-    applyFilter();
     return tile;
   }
   function removeGuestTile(id) {
@@ -964,10 +1080,9 @@
     if (!v) return;
     v.srcObject = stream;
     const isSelf = tile.dataset.self === '1';
-    // host hears guests; viewer only hears when sound toggle is on; self always muted
     v.muted = isSelf || (state.role !== 'host' && !state.soundOn);
     v.play().catch(() => { v.muted = true; });
-    applyFilter();
+    if (isSelf && state.facingMode === 'user') v.classList.add('mirrored');
   }
 
   /* ================= REQUESTS ================= */
@@ -1007,7 +1122,7 @@
     if (conn && conn.open) conn.send({ type:'guest-denied' });
   }
 
-  /* ================= GUEST REMOVAL (HOST) ================= */
+  /* ================= GUEST REMOVAL ================= */
   function removeGuest(guestId, notify) {
     const g = state.guests.get(guestId);
     if (g) {
@@ -1033,12 +1148,10 @@
       landingError.textContent = 'Camera access requires HTTPS or localhost.';
       return;
     }
-    let stream;
+
+    let raw;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
-        audio: { echoCancellation: true, noiseSuppression: true }
-      });
+      raw = await navigator.mediaDevices.getUserMedia(CAM_CONSTRAINTS('user'));
     } catch (err) {
       landingError.textContent = err && err.name === 'NotAllowedError'
         ? 'Camera/microphone permission was denied.'
@@ -1047,34 +1160,42 @@
     }
 
     state.role = 'host';
-    state.localStream = stream;
     state.code = genCode();
     state.boardText = '';
     state.boardTextColor = DEFAULT_TEXT_COLOR;
     state.boardBgColor = DEFAULT_BG_COLOR;
-    state.filterId = 'none';
+    state.filterId = 'natural';
     state.filterCss = 'none';
-    state.torch = false;
-    state.screenLight = false;
-    state.filtersOpen = false;
+    state.filterBeauty = 0;
+    state.facingMode = 'user';
     state.soundOn = true;
     state.guests.clear();
     state.guestRelays = [];
     state.requests.clear();
-    state.facingMode = 'user';
+    state.torch = false;
+    state.screenLight = false;
+    state.filtersOpen = false;
 
-    hostVideo.srcObject = stream;
+    // Raw stream → pipeline → filtered stream
+    state.localStream = raw;
+    state.pipeline = new FilterPipeline();
+    await state.pipeline.attach(raw);
+    state.outStream = new MediaStream([
+      ...state.pipeline.getStream().getVideoTracks(),
+      ...raw.getAudioTracks()
+    ]);
+
+    // Preview uses the filtered stream, mirrored for front camera
+    hostVideo.srcObject = state.outStream;
     hostVideo.muted = true;
     hostVideo.classList.add('mirrored');
-    hostVideo.style.filter = 'none';
     hostVideo.play().catch(() => {});
-    updateTorchSupport(stream.getVideoTracks()[0]);
+    updateTorchSupport(raw.getVideoTracks()[0]);
 
     enterRoom();
     codeText.textContent = state.code;
     setupShare(state.code);
 
-    // Board
     boardColors.classList.add('show');
     boardInput.style.display = '';
     boardView.style.display = 'none';
@@ -1082,7 +1203,6 @@
     boardView.textContent = '';
     applyBoardStyle();
 
-    // Buttons
     micBtn.style.display = '';
     camBtn.style.display = '';
     flipBtn.style.display = '';
@@ -1098,7 +1218,7 @@
     filtersBar.classList.remove('open');
     stage.classList.remove('filters-open');
     buildFilterChips();
-    applyFilter();
+    selectFilter('natural');
 
     endBtn.textContent = 'End';
     setStatus('Connecting…', false);
@@ -1118,8 +1238,8 @@
     wireConnection(conn);
 
     const startHostCall = () => {
-      if (!state.localStream) return;
-      const call = state.peer.call(conn.peer, state.localStream, { metadata: { role:'host' } });
+      if (!state.outStream) return;
+      const call = state.peer.call(conn.peer, state.outStream, { metadata: { role:'host' } });
       if (call) state.calls.push(call);
     };
     const relayExistingGuests = () => {
@@ -1137,7 +1257,6 @@
       if (conn.open) {
         conn.send({ type:'board', text: state.boardText });
         conn.send({ type:'board-style', textColor: state.boardTextColor, bgColor: state.boardBgColor });
-        conn.send({ type:'filter', id: state.filterId });
       }
       syncCount();
     };
@@ -1155,12 +1274,12 @@
     }
     state.role = 'viewer';
     state.code = code;
-    state.filterId = 'none';
-    state.filterCss = 'none';
     state.radio = false;
     state.isGuest = false;
     state.myGuestMode = null;
     state.guestStream = null;
+    state.guestPipeline = null;
+    state.guestOutStream = null;
     state.soundOn = false;
     state.guests.clear();
     state.guestViews.clear();
@@ -1204,7 +1323,6 @@
 
     hostVideo.classList.remove('mirrored');
     hostVideo.muted = true;
-    hostVideo.style.filter = 'none';
     setStatus('Connecting…', false);
     showWaiting('Connecting to the live…');
     setViewerCount(1);
@@ -1215,7 +1333,6 @@
   function onIncomingCall(call) {
     const meta = call.metadata || {};
 
-    /* ---- VIEWER SIDE ---- */
     if (state.role === 'viewer') {
       try { call.answer(); } catch (e) {}
       state.calls.push(call);
@@ -1225,7 +1342,6 @@
           hostVideo.srcObject = remote;
           hostVideo.muted = !state.soundOn;
           hostVideo.play().catch(() => { hostVideo.muted = true; });
-          applyFilter();
           hideWaiting();
           setStatus('Live', true);
         });
@@ -1233,7 +1349,6 @@
           setStatus('Live ended', false);
           showWaiting('The host has ended the live.');
         });
-
       } else if (meta.role === 'guest') {
         const gid = meta.guestId;
         const gname = meta.name || 'Guest';
@@ -1254,7 +1369,6 @@
       return;
     }
 
-    /* ---- HOST SIDE (receives guest stream) ---- */
     if (state.role === 'host' && meta.role === 'guest') {
       try { call.answer(); } catch (e) {}
       state.calls.push(call);
@@ -1271,7 +1385,6 @@
         if (g) g.stream = stream;
         attachToTile(gid, stream);
 
-        // relay to every connected viewer
         state.conns.forEach(conn => {
           if (!conn.open) return;
           const relay = state.peer.call(conn.peer, stream, {
@@ -1285,31 +1398,50 @@
       return;
     }
 
-    // unknown incoming call — just answer politely
     try { call.answer(); } catch (e) {}
   }
 
-  /* ================= GUEST LIFECYCLE (VIEWER) ================= */
+  /* ================= GUEST LIFECYCLE ================= */
   async function becomeGuest(mode) {
     if (state.isGuest) return;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: state.facingMode || 'user' },
-        audio: { echoCancellation: true, noiseSuppression: true }
-      });
-      if (mode === 'radio') stream.getVideoTracks().forEach(t => { t.enabled = false; });
+      const raw = await navigator.mediaDevices.getUserMedia(
+        mode === 'radio'
+          ? { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false }
+          : CAM_CONSTRAINTS(state.facingMode || 'user')
+      );
 
-      state.guestStream = stream;
+      state.guestStream = raw;
       state.isGuest = true;
       state.myGuestMode = mode;
       state.myGuestName = (state.myGuestName || 'Guest').slice(0, 20);
 
-      addGuestTile(state.peer.id, state.myGuestName + ' (you)', mode, true);
-      attachToTile(state.peer.id, stream);
-      const selfTile = tilesStrip.querySelector(`.tile[data-guestid="${CSS.escape(state.peer.id)}"] video`);
-      if (selfTile) selfTile.classList.toggle('mirrored', state.facingMode === 'user');
+      state.guestPipeline = new FilterPipeline();
+      if (raw.getVideoTracks().length) {
+        await state.guestPipeline.attach(raw);
+        state.guestPipeline.setFilter(state.filterCss, state.filterBeauty);
+        state.guestPipeline.setRadioMode(mode === 'radio');
+      } else {
+        // radio-only stream — draw placeholder
+        state.guestPipeline.radioMode = true;
+        state.guestPipeline._running = true;
+        state.guestPipeline._loop();
+      }
 
-      const call = state.peer.call(ID_PREFIX + state.code, stream, {
+      const videoTracks = raw.getVideoTracks().length
+        ? state.guestPipeline.getStream().getVideoTracks()
+        : state.guestPipeline.getStream().getVideoTracks();  // still canvas stream
+
+      state.guestOutStream = new MediaStream([
+        ...videoTracks,
+        ...raw.getAudioTracks()
+      ]);
+
+      // Self tile shows filtered stream
+      addGuestTile(state.peer.id, state.myGuestName + ' (you)', mode, true);
+      attachToTile(state.peer.id, state.guestOutStream);
+
+      const call = state.peer.call(ID_PREFIX + state.code, state.guestOutStream, {
         metadata: {
           role: 'guest',
           guestId: state.peer.id,
@@ -1332,10 +1464,9 @@
       if (c._guestId === state.peer.id) { try { c.close(); } catch (e) {} return false; }
       return true;
     });
-    if (state.guestStream) {
-      state.guestStream.getTracks().forEach(t => t.stop());
-      state.guestStream = null;
-    }
+    if (state.guestStream) { state.guestStream.getTracks().forEach(t => t.stop()); state.guestStream = null; }
+    if (state.guestPipeline) { state.guestPipeline.stop(); state.guestPipeline = null; }
+    state.guestOutStream = null;
     removeGuestTile(state.peer.id);
     state.isGuest = false;
     state.myGuestMode = null;
@@ -1354,7 +1485,6 @@
       guestRadioBtn.style.display = '';
       guestRadioBtn.classList.toggle('on', state.myGuestMode === 'radio');
       guestRadioBtn.textContent = state.myGuestMode === 'radio' ? '📻 Radio ON' : '📻 Radio';
-
       micBtn.style.display = '';
       micBtn.textContent = '🎤';
       micBtn.classList.remove('off');
@@ -1376,11 +1506,8 @@
   guestRadioBtn.addEventListener('click', () => {
     if (!state.isGuest || !state.guestStream) return;
     const next = state.myGuestMode === 'radio' ? 'camera' : 'radio';
-    const vids = state.guestStream.getVideoTracks();
-    if (next === 'radio') vids.forEach(t => { t.enabled = false; });
-    else                  vids.forEach(t => { t.enabled = true; });
-
     state.myGuestMode = next;
+    if (state.guestPipeline) state.guestPipeline.setRadioMode(next === 'radio');
     const tile = tilesStrip.querySelector(`.tile[data-guestid="${CSS.escape(state.peer.id)}"]`);
     if (tile) tile.classList.toggle('radio', next === 'radio');
     const conn = state.conns[0];
@@ -1395,20 +1522,7 @@
     stage.classList.toggle('radio', state.radio);
     viewRadioBtn.classList.toggle('on', state.radio);
     viewRadioBtn.textContent = state.radio ? '📻 View ON' : '📻 View';
-
-    const hostTrack = hostVideo.srcObject && hostVideo.srcObject.getVideoTracks()[0];
-    if (state.radio) {
-      if (hostTrack) hostTrack.enabled = false;
-      document.querySelectorAll('.tile[data-guestid]').forEach(t => t.classList.add('radio'));
-    } else {
-      if (hostTrack) hostTrack.enabled = true;
-      document.querySelectorAll('.tile[data-guestid]').forEach(t => {
-        const id = t.dataset.guestid;
-        const rec = state.guestViews.get(id);
-        t.classList.toggle('radio', !!(rec && rec.mode === 'radio'));
-      });
-      hostVideo.play().catch(() => {});
-    }
+    hostVideo.style.visibility = state.radio ? 'hidden' : 'visible';
   });
 
   /* ================= WAVE UI ================= */
@@ -1455,9 +1569,7 @@
           ctx.fillText(line, x, y);
           line = words[n] + ' ';
           y += lineHeight;
-        } else {
-          line = test;
-        }
+        } else { line = test; }
       }
       ctx.fillText(line, x, y);
       y += lineHeight;
@@ -1471,6 +1583,30 @@
     ctx.arcTo(x, y + h, x, y, r);
     ctx.arcTo(x, y, x + w, y, r);
     ctx.closePath();
+  }
+  function drawTile(ctx, vid, x, y, size, mirrored) {
+    if (!vid || vid.readyState < 2 || !vid.videoWidth) {
+      ctx.fillStyle = '#0b0f16';
+      roundRect(ctx, x, y, size, size, 16);
+      ctx.fill();
+      return;
+    }
+    const vw = vid.videoWidth, vh = vid.videoHeight;
+    const scale = Math.max(size / vw, size / vh);
+    const sw = size / scale, sh = size / scale;
+    const sx = (vw - sw) / 2, sy = (vh - sh) / 2;
+
+    ctx.save();
+    roundRect(ctx, x, y, size, size, 16);
+    ctx.clip();
+    if (mirrored) {
+      ctx.translate(x + size, y);
+      ctx.scale(-1, 1);
+      ctx.drawImage(vid, sx, sy, sw, sh, 0, 0, size, size);
+    } else {
+      ctx.drawImage(vid, sx, sy, sw, sh, x, y, size, size);
+    }
+    ctx.restore();
   }
 
   async function startRecording() {
@@ -1521,12 +1657,10 @@
       const a = document.createElement('a');
       a.href = url;
       a.download = `streamlink-live-${new Date().toISOString().replace(/[:.]/g, '-')}.${ext}`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 10000);
       addMessage(`Recording saved as .${ext}`, 'system');
-      if (ext !== 'mp4') addMessage('Browser cannot encode MP4 directly — saved as WebM (convert with an online tool if needed).', 'system');
+      if (ext !== 'mp4') addMessage('Browser cannot encode MP4 directly — saved as WebM.', 'system');
     };
     rec.start(2000);
 
@@ -1534,40 +1668,25 @@
     state.recording = stateRec;
 
     const draw = () => {
-      // board background
       ctx.fillStyle = state.boardBgColor || '#0a0d13';
       ctx.fillRect(0, 0, 1280, 720);
 
-      // board text
       ctx.fillStyle = state.boardTextColor || '#e9eefb';
       ctx.font = 'bold 34px -apple-system, "Segoe UI", sans-serif';
       ctx.textBaseline = 'top';
       wrapText(ctx, state.boardText || 'Live on StreamLink', 50, 50, 820, 44);
 
-      // host tile (mirrored if facing user)
+      // Host tile
       if (hostVideo.readyState >= 2) {
-        const vx = 900, vy = 50, vw = 340, vh = 340;
-        ctx.save();
-        roundRect(ctx, vx, vy, vw, vh, 22);
-        ctx.clip();
-        if (state.filterCss !== 'none') ctx.filter = state.filterCss;
-        if (hostVideo.classList.contains('mirrored')) {
-          ctx.translate(vx + vw, vy);
-          ctx.scale(-1, 1);
-          ctx.drawImage(hostVideo, 0, 0, vw, vh);
-        } else {
-          ctx.drawImage(hostVideo, vx, vy, vw, vh);
-        }
-        ctx.filter = 'none';
-        ctx.restore();
+        drawTile(ctx, hostVideo, 900, 50, 340, hostVideo.classList.contains('mirrored'));
         ctx.fillStyle = 'rgba(0,0,0,.65)';
-        ctx.fillRect(vx + 12, vy + vh - 42, 90, 30);
+        ctx.fillRect(912, 348, 90, 30);
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 16px -apple-system, sans-serif';
-        ctx.fillText('HOST', vx + 24, vy + vh - 22);
+        ctx.fillText('HOST', 924, 368);
       }
 
-      // guest row
+      // Guest tiles
       const guestArr = Array.from(state.guests.values());
       const tw = 150, th = 150, gap = 12;
       let gx = 50;
@@ -1575,22 +1694,18 @@
       for (const g of guestArr) {
         const tile = tilesStrip.querySelector(`.tile[data-guestid="${CSS.escape(g.id)}"]`);
         const vid = tile ? tile.querySelector('video') : null;
-        if (vid && vid.readyState >= 2 && g.mode !== 'radio') {
-          ctx.save();
-          roundRect(ctx, gx, gy, tw, th, 18);
-          ctx.clip();
-          if (state.filterCss !== 'none') ctx.filter = state.filterCss;
-          ctx.drawImage(vid, gx, gy, tw, th);
-          ctx.filter = 'none';
-          ctx.restore();
+        if (g.mode !== 'radio' && vid) {
+          drawTile(ctx, vid, gx, gy, tw, vid.classList.contains('mirrored'));
         } else {
-          ctx.fillStyle = '#14203a';
-          roundRect(ctx, gx, gy, tw, th, 18);
-          ctx.fill();
+          const bg = ctx.createLinearGradient(gx, gy, gx + tw, gy + th);
+          bg.addColorStop(0, '#14203a');
+          bg.addColorStop(1, '#0a0e16');
+          ctx.fillStyle = bg;
+          roundRect(ctx, gx, gy, tw, th, 16); ctx.fill();
           ctx.fillStyle = '#8b9ec4';
           ctx.font = 'bold 40px -apple-system, sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText('📻', gx + tw / 2, gy + th / 2 - 12);
+          ctx.fillText('📻', gx + tw / 2, gy + th / 2 + 12);
           ctx.textAlign = 'left';
         }
         ctx.fillStyle = 'rgba(0,0,0,.65)';
@@ -1603,7 +1718,6 @@
         if (gx + tw > 1280 - 50) break;
       }
 
-      // timestamp
       ctx.fillStyle = 'rgba(255,255,255,.6)';
       ctx.font = '13px -apple-system, sans-serif';
       ctx.textAlign = 'right';
@@ -1639,10 +1753,8 @@
   /* ================= SHARE ================= */
   function setupShare(code) {
     const url = location.origin + location.pathname + '#room=' + code;
-    const liveMsg = `🔴 I'm live right now on StreamLink! Watch here: ${url}`;
-    const codeMsg = `Join my StreamLink live — room code: ${code}\n${url}`;
-    shareLive.href = 'https://wa.me/?text=' + encodeURIComponent(liveMsg);
-    shareCode.href = 'https://wa.me/?text=' + encodeURIComponent(codeMsg);
+    shareLive.href = 'https://wa.me/?text=' + encodeURIComponent(`🔴 I'm live on StreamLink! Watch here: ${url}`);
+    shareCode.href = 'https://wa.me/?text=' + encodeURIComponent(`Join my StreamLink live — code: ${code}\n${url}`);
   }
   shareBtn.addEventListener('click', e => { e.stopPropagation(); shareMenu.classList.toggle('open'); });
   document.addEventListener('click', e => {
@@ -1733,11 +1845,15 @@
     state.peer = null;
 
     if (state.localStream) { state.localStream.getTracks().forEach(t => t.stop()); state.localStream = null; }
+    if (state.pipeline) { state.pipeline.stop(); state.pipeline = null; }
+    if (state.outStream) { state.outStream.getVideoTracks().forEach(t => t.stop()); state.outStream = null; }
     if (state.guestStream) { state.guestStream.getTracks().forEach(t => t.stop()); state.guestStream = null; }
+    if (state.guestPipeline) { state.guestPipeline.stop(); state.guestPipeline = null; }
+    state.guestOutStream = null;
 
     hostVideo.srcObject = null;
     hostVideo.classList.remove('mirrored');
-    hostVideo.style.filter = 'none';
+    hostVideo.style.visibility = 'visible';
 
     tilesStrip.querySelectorAll('.tile[data-guestid]').forEach(t => t.remove());
     requestsEl.innerHTML = '';
@@ -1751,8 +1867,9 @@
     state.boardBgColor = DEFAULT_BG_COLOR;
     state.chatOpen = false;
     state.unread = 0;
-    state.filterId = 'none';
+    state.filterId = 'natural';
     state.filterCss = 'none';
+    state.filterBeauty = 0;
     state.filtersOpen = false;
     state.torchSupported = false;
     state.torch = false;
@@ -1820,17 +1937,21 @@
 
   /* ================= MEDIA CONTROLS ================= */
   function activeStream() {
-    return state.role === 'host' ? state.localStream : state.guestStream;
+    if (state.role === 'host') return state.localStream;
+    if (state.isGuest) return state.guestStream;
+    return null;
   }
   micBtn.addEventListener('click', () => {
-    const track = activeStream() && activeStream().getAudioTracks()[0];
+    const s = activeStream();
+    const track = s && s.getAudioTracks()[0];
     if (!track) return;
     track.enabled = !track.enabled;
     micBtn.classList.toggle('off', !track.enabled);
     micBtn.textContent = track.enabled ? '🎤' : '🔇';
   });
   camBtn.addEventListener('click', () => {
-    const track = activeStream() && activeStream().getVideoTracks()[0];
+    const s = activeStream();
+    const track = s && s.getVideoTracks()[0];
     if (!track) return;
     track.enabled = !track.enabled;
     camBtn.classList.toggle('off', !track.enabled);
@@ -1911,7 +2032,9 @@
     }
     try { state.peer && state.peer.destroy(); } catch (e) {}
     if (state.localStream) state.localStream.getTracks().forEach(t => t.stop());
+    if (state.pipeline) state.pipeline.stop();
     if (state.guestStream) state.guestStream.getTracks().forEach(t => t.stop());
+    if (state.guestPipeline) state.guestPipeline.stop();
   });
 })();
 </script>
