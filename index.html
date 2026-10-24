@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -42,7 +43,7 @@
   .logo .brand{background:linear-gradient(100deg,#4f8cff,#8b5cff,#2ee6a8);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;letter-spacing:.6px}
   h1{font-size:25px;line-height:1.3;font-weight:700;letter-spacing:-.4px;margin-bottom:10px}
   h1 span{background:linear-gradient(100deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .sub{font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:26px}
+  .sub{font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:22px}
   .btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;border-radius:13px;
     font-size:15px;font-weight:600;transition:transform .12s ease, filter .2s ease, background .2s}
   .btn:active{transform:scale(.98)}
@@ -52,17 +53,24 @@
   .btn.ghost{background:var(--panel-2);border:1px solid var(--border);padding:11px 18px;font-size:14px}
   .btn.primary.small{width:auto;padding:11px 20px;font-size:14px;box-shadow:none}
   .divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;
-    text-transform:uppercase;letter-spacing:1.2px;margin:22px 0 16px}
+    text-transform:uppercase;letter-spacing:1.2px;margin:20px 0 14px}
   .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
   .join-row{display:flex;gap:9px}
   .join-row input{flex:1;min-width:0;background:var(--panel-2);border:1px solid var(--border);
-    border-radius:13px;padding:14px 16px;color:var(--text);font-size:15px;letter-spacing:4px;
-    text-align:center;font-weight:600;text-transform:uppercase;outline:none;transition:border-color .2s}
-  .join-row input::placeholder{letter-spacing:normal;font-weight:400;color:#5b6780;text-transform:none}
+    border-radius:13px;padding:14px 12px;color:var(--text);font-size:14px;letter-spacing:.5px;
+    text-align:center;font-weight:600;outline:none;transition:border-color .2s}
+  .join-row input::placeholder{letter-spacing:normal;font-weight:400;color:#5b6780}
   .join-row input:focus{border-color:var(--accent)}
   .join-row .btn{background:var(--panel-2);border:1px solid var(--border);padding:14px 22px}
   .join-row .btn:hover{background:#1e2637}
-  .error{color:var(--danger);font-size:13px;margin-top:14px;text-align:center;min-height:18px}
+  .day-hint{
+    margin-top:14px;padding:12px 14px;border-radius:12px;
+    background:rgba(79,140,255,.08);border:1px solid rgba(79,140,255,.22);
+    font-size:12.5px;color:var(--muted);text-align:center;line-height:1.75
+  }
+  .day-hint strong{color:var(--text);font-weight:700}
+  .day-hint .dc{color:var(--accent);font-weight:800;letter-spacing:.3px}
+  .error{color:var(--danger);font-size:13px;margin-top:12px;text-align:center;min-height:18px}
 
   .modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;
     padding:24px;background:rgba(5,7,11,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
@@ -157,7 +165,7 @@
   .pill{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;
     font-size:12.5px;font-weight:600;background:rgba(17,22,33,.85);border:1px solid var(--border);
     backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);white-space:nowrap}
-  #statusPill{max-width:38vw}
+  #statusPill{max-width:30vw}
   #statusText{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .pill .live-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
   .pill.live .live-dot{background:var(--danger);box-shadow:0 0 0 0 rgba(255,77,106,.7);animation:pulse 1.8s infinite}
@@ -166,12 +174,13 @@
     70%{box-shadow:0 0 0 9px rgba(255,77,106,0)}
     100%{box-shadow:0 0 0 0 rgba(255,77,106,0)}
   }
+  #dayPill{color:var(--muted);display:none;font-weight:600}
   .rec-indicator{display:none;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;
     background:rgba(255,77,106,.2);border:1px solid rgba(255,77,106,.5);color:#ff8fa2;
     font-size:11px;font-weight:800;letter-spacing:1px}
   .rec-indicator.active{display:inline-flex}
   .rec-indicator span{width:8px;height:8px;border-radius:50%;background:var(--danger);animation:pulse 1s infinite}
-  .code-pill{cursor:pointer;letter-spacing:1.6px;color:var(--accent);transition:background .18s}
+  .code-pill{cursor:pointer;letter-spacing:.3px;color:var(--accent);transition:background .18s}
   .code-pill:hover{background:rgba(79,140,255,.16)}
   .share-wrap{position:relative}
   #shareBtn{transition:background .18s}
@@ -304,12 +313,14 @@
     .board-colors{gap:4px}
     .swatch-label{padding:3px 6px;font-size:9px}
     .swatch{width:13px;height:13px}
+    #dayPill{display:none !important}
   }
   @media (max-width:560px){
     .copy-hint{display:none}
     .share-label{display:none}
     .pill{padding:7px 10px;font-size:12px}
     .board-label{font-size:10px;letter-spacing:1px}
+    #statusPill{max-width:44vw}
   }
   @media (min-width:821px){ #chatToggle{display:none} }
 </style>
@@ -319,13 +330,16 @@
 <div id="landing" class="screen active">
   <div class="card">
     <div class="logo"><span class="dot"></span><span class="brand">CLA$$APP(JERRY)</span></div>
-    <h1>Go live from your camera.<br><span>Board, radio & multi-guest audio.</span></h1>
-    <p class="sub">Only the admin can start a live. Viewers hear the host and everyone on stage — just like Clubhouse &amp; TikTok Live. Up to 8 guests, filters, flip camera and recording.</p>
+    <h1>Go live from your camera.<br><span>One Jerry code per day.</span></h1>
+    <p class="sub">Only the admin can start a live. Each day has a fixed Jerry code like <strong style="color:var(--accent)">lunJerry1</strong> — day prefix, "Jerry", then a day number. Up to 8 guests, filters, flip camera, radio & recording.</p>
     <button id="btnGoLive" class="btn primary"><span>●</span> Go Live (Admin)</button>
     <div class="divider">or join a live</div>
     <div class="join-row">
-      <input id="codeInput" placeholder="Room code" maxlength="6" autocomplete="off" spellcheck="false">
+      <input id="codeInput" placeholder="e.g. lunJerry1" maxlength="9" autocomplete="off" spellcheck="false" autocapitalize="none" autocorrect="off">
       <button id="btnJoin" class="btn">Join</button>
+    </div>
+    <div class="day-hint" id="dayHint">
+      Today is <strong id="todayName">—</strong> — code: <span class="dc" id="todayCode">·········</span>
     </div>
     <p id="landingError" class="error"></p>
   </div>
@@ -408,10 +422,11 @@
 
     <div class="overlay-top">
       <div class="pill" id="statusPill"><span class="live-dot"></span><span id="statusText">Connecting…</span></div>
+      <div class="pill" id="dayPill"><span>📅</span><span id="dayText">—</span></div>
       <div class="rec-indicator" id="recIndicator"><span></span>REC</div>
       <div class="spacer"></div>
       <button class="pill code-pill" id="codePill" title="Copy invite link">
-        <span id="codeText">------</span><span class="copy-hint"> · copy</span>
+        <span id="codeText">·········</span><span class="copy-hint"> · copy</span>
       </button>
       <div class="share-wrap">
         <button class="pill" id="shareBtn">📤<span class="share-label"> Share</span></button>
@@ -464,14 +479,44 @@
   /* ================= CONFIG ================= */
   const APP_NAME       = 'CLA$$APP(JERRY)';
   const ADMIN_PASSWORD = 'admin123';
-  const ID_PREFIX      = 'classapp-jerry-v1-';
-  const CODE_ALPHABET  = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const CODE_LEN       = 6;
+  const ID_PREFIX      = 'classapp-jerry-v4-';
+  const CODE_LEN       = 9;             // day + Jerry + number, e.g. lunJerry1
   const MAX_GUESTS     = 8;
   const DEFAULT_TEXT_COLOR = '#e9eefb';
   const DEFAULT_BG_COLOR   = '#0a0d13';
   const CANVAS_SIZE    = 720;
   const TARGET_FPS     = 30;
+
+  /* ==== JERRY CODES — ONE PER DAY (lun=Monday … dim=Sunday) ==== */
+  const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const DAY_CODES = [
+    'dimJerry7',   // Sunday    (dimanche)
+    'lunJerry1',   // Monday    (lundi)
+    'marJerry2',   // Tuesday   (mardi)
+    'merJerry3',   // Wednesday (mercredi)
+    'jeuJerry4',   // Thursday  (jeudi)
+    'venJerry5',   // Friday    (vendredi)
+    'samJerry6'    // Saturday  (samedi)
+  ];
+
+  function todayName() { return DAY_NAMES[new Date().getDay()]; }
+  function todayCode() { return DAY_CODES[new Date().getDay()]; }
+  function canonicalCode(input) {
+    const lower = String(input || '').trim().toLowerCase();
+    for (const dc of DAY_CODES) {
+      if (dc.toLowerCase() === lower) return dc;
+    }
+    return null;
+  }
+  function dayOfCode(code) {
+    const canonical = canonicalCode(code);
+    if (!canonical) return null;
+    const i = DAY_CODES.indexOf(canonical);
+    return i >= 0 ? DAY_NAMES[i] : null;
+  }
+  function sanitizeCode(raw) {
+    return String(raw || '').replace(/[^A-Za-z0-9]/g, '').slice(0, CODE_LEN);
+  }
 
   const FILTERS = [
     { id:'natural', label:'Natural', css:'none',                                                  beauty:0    },
@@ -492,9 +537,7 @@
 
   /* ================= AUDIO BUS ================= */
   class AudioBus {
-    constructor() {
-      this.ctx = null; this.master = null; this.nodes = new Map(); this.muted = false;
-    }
+    constructor() { this.ctx=null; this.master=null; this.nodes=new Map(); this.muted=false; }
     init() {
       if (this.ctx) return;
       try {
@@ -658,6 +701,8 @@
   const codePill     = $('#codePill');
   const statusPill   = $('#statusPill');
   const statusText   = $('#statusText');
+  const dayPill      = $('#dayPill');
+  const dayText      = $('#dayText');
   const recIndicator = $('#recIndicator');
   const waiting      = $('#waiting');
   const waitingText  = $('#waitingText');
@@ -693,6 +738,8 @@
   const waveName     = $('#waveName');
   const waveError    = $('#waveError');
   const listenPrompt = $('#listenPrompt');
+  const todayNameEl  = $('#todayName');
+  const todayCodeEl  = $('#todayCode');
 
   /* ================= STATE ================= */
   const state = {
@@ -711,11 +758,6 @@
   let boardTimer = null;
 
   /* ================= HELPERS ================= */
-  function genCode() {
-    let s = '';
-    for (let i = 0; i < CODE_LEN; i++) s += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
-    return s;
-  }
   const timeString = ts => new Date(ts || Date.now()).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
   const setStatus = (text, live) => { statusText.textContent = text; statusPill.classList.toggle('live', !!live); };
   const setViewerCount = n => { viewerCount.textContent = n + (n === 1 ? ' viewer' : ' viewers'); };
@@ -733,6 +775,14 @@
     },
     audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
   });
+
+  function refreshDayHint() {
+    todayNameEl.textContent = todayName();
+    todayCodeEl.textContent = todayCode();
+    dayText.textContent = todayName();
+  }
+  refreshDayHint();
+  setInterval(refreshDayHint, 60000);
 
   function ensureAudioBus() {
     if (!state.audioBus) state.audioBus = new AudioBus();
@@ -1121,7 +1171,7 @@
     }
 
     state.role = 'host';
-    state.code = genCode();
+    state.code = todayCode();                // ← Jerry code, one per day
     state.boardText = '';
     state.boardTextColor = DEFAULT_TEXT_COLOR;
     state.boardBgColor = DEFAULT_BG_COLOR;
@@ -1149,6 +1199,8 @@
 
     enterRoom();
     codeText.textContent = state.code;
+    dayPill.style.display = '';
+    dayText.textContent = todayName();
     setupShare(state.code);
 
     boardColors.classList.add('show');
@@ -1223,10 +1275,17 @@
   /* ================= VIEWER ================= */
   function joinStream(rawCode) {
     landingError.textContent = '';
-    const code = (rawCode || '').trim().toUpperCase();
-    if (code.length !== CODE_LEN) {
-      landingError.textContent = 'Enter the ' + CODE_LEN + '-character room code.'; return;
+    const code = canonicalCode(rawCode);
+    if (!code) {
+      landingError.textContent = `That code doesn't match any day. Today (${todayName()}) uses ${todayCode()}.`;
+      return;
     }
+    if (code !== todayCode()) {
+      const otherDay = dayOfCode(code);
+      landingError.textContent = `That's ${otherDay}'s code. Today is ${todayName()} — use ${todayCode()}.`;
+      return;
+    }
+
     state.audioBus = new AudioBus();
     state.audioBus.init();
     state.audioBus.resume();
@@ -1249,6 +1308,8 @@
 
     enterRoom();
     codeText.textContent = code;
+    dayPill.style.display = '';
+    dayText.textContent = todayName();
     setupShare(code);
 
     boardColors.classList.remove('show');
@@ -1601,7 +1662,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `classapp-jerry-live-${new Date().toISOString().replace(/[:.]/g, '-')}.${ext}`;
+      a.download = `classapp-jerry-${state.code || todayCode()}-${new Date().toISOString().replace(/[:.]/g, '-')}.${ext}`;
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 10000);
       addMessage(`Recording saved as .${ext}`, 'system');
@@ -1617,7 +1678,7 @@
       ctx.fillStyle = state.boardTextColor || '#e9eefb';
       ctx.font = 'bold 34px -apple-system, "Segoe UI", sans-serif';
       ctx.textBaseline = 'top';
-      wrapText(ctx, state.boardText || ('Live on ' + APP_NAME), 50, 50, 820, 44);
+      wrapText(ctx, state.boardText || ('Live on ' + APP_NAME + ' · ' + (state.code || todayCode())), 50, 50, 820, 44);
 
       if (hostVideo.readyState >= 2) {
         drawTile(ctx, hostVideo, 900, 50, 340, hostVideo.classList.contains('mirrored'));
@@ -1690,9 +1751,10 @@
 
   /* ================= SHARE ================= */
   function setupShare(code) {
-    const url = location.origin + location.pathname + '#room=' + code;
-    shareLive.href = 'https://wa.me/?text=' + encodeURIComponent(`🔴 I'm live on ${APP_NAME}! Watch here: ${url}`);
-    shareCode.href = 'https://wa.me/?text=' + encodeURIComponent(`Join my ${APP_NAME} live — code: ${code}\n${url}`);
+    const url = location.origin + location.pathname + '#room=' + encodeURIComponent(code);
+    const day = todayName();
+    shareLive.href = 'https://wa.me/?text=' + encodeURIComponent(`🔴 I'm live on ${APP_NAME} (${day})! Watch here: ${url}`);
+    shareCode.href = 'https://wa.me/?text=' + encodeURIComponent(`${day}'s ${APP_NAME} live — code: ${code}\n${url}`);
   }
   shareBtn.addEventListener('click', e => { e.stopPropagation(); shareMenu.classList.toggle('open'); });
   document.addEventListener('click', e => {
@@ -1700,7 +1762,7 @@
   });
   codePill.addEventListener('click', async () => {
     if (!state.code) return;
-    const link = location.origin + location.pathname + '#room=' + state.code;
+    const link = location.origin + location.pathname + '#room=' + encodeURIComponent(state.code);
     const original = codePill.innerHTML;
     try { await navigator.clipboard.writeText(link); }
     catch (e) {
@@ -1720,7 +1782,7 @@
     state.peer.on('open', () => {
       if (state.role === 'host') {
         setStatus('Live', true);
-        addMessage(`You are live on ${APP_NAME}. Room code: ` + state.code + '.', 'system');
+        addMessage(`You are live on ${APP_NAME} — ${todayName()}'s code: ${state.code}.`, 'system');
       } else {
         const conn = state.peer.connect(ID_PREFIX + state.code, { reliable: true });
         state.conns.push(conn);
@@ -1741,15 +1803,12 @@
       const type = err && err.type;
       if (type === 'peer-unavailable') {
         if (state.role === 'viewer') {
-          landingError.textContent = 'No live found with that code. Check it and try again.';
+          landingError.textContent = `Nobody is live with ${todayName()}'s code (${todayCode()}) right now. Ask the host to go live first.`;
           leaveRoom();
         }
       } else if (type === 'unavailable-id' && state.role === 'host') {
-        state.code = genCode();
-        codeText.textContent = state.code;
-        setupShare(state.code);
-        try { state.peer.destroy(); } catch (e) {}
-        createPeer(ID_PREFIX + state.code);
+        leaveRoom();
+        landingError.textContent = `${todayName()}'s code (${todayCode()}) is already live. Someone else is streaming today — try again later.`;
       } else if (type === 'network' || type === 'server-error' || type === 'socket-error') {
         setStatus('Connection problem', false);
         if (state.role === 'viewer') showWaiting('Connection lost. Reconnecting…');
@@ -1836,6 +1895,7 @@
     boardColors.classList.remove('show');
     applyBoardStyle();
 
+    dayPill.style.display = 'none';
     viewRadioBtn.textContent = '📻 View';
     viewRadioBtn.classList.remove('on');
     viewRadioBtn.style.display = 'none';
@@ -1865,7 +1925,7 @@
     chatPanel.classList.remove('open');
     shareMenu.classList.remove('open');
     setStatus('Connecting…', false);
-    codeText.textContent = '------';
+    codeText.textContent = '·········';
     hideWaiting();
 
     room.classList.remove('active');
@@ -1948,14 +2008,26 @@
   $('#btnJoin').addEventListener('click', () => joinStream(codeInput.value));
   codeInput.addEventListener('keydown', e => { if (e.key === 'Enter') joinStream(codeInput.value); });
   codeInput.addEventListener('input', () => {
-    codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, CODE_LEN);
+    const selStart = codeInput.selectionStart;
+    codeInput.value = sanitizeCode(codeInput.value);
+    try { codeInput.setSelectionRange(selStart, selStart); } catch (e) {}
   });
 
   /* ================= DEEP LINK ================= */
   (function handleHash() {
-    const m = location.hash.match(/room=([A-Za-z0-9]{6})/);
-    if (m) {
-      codeInput.value = m[1].toUpperCase();
+    const m = location.hash.match(/room=([A-Za-z0-9%-]{5,12})/);
+    if (!m) return;
+    const hashCode = decodeURIComponent(m[1]);
+    const canonical = canonicalCode(hashCode);
+    if (!canonical) return;
+    const hashDay = dayOfCode(canonical);
+    const today = todayName();
+    const todaysCode = todayCode();
+    if (hashDay && hashDay !== today) {
+      codeInput.value = todaysCode;
+      landingError.textContent = `That link was for ${hashDay}'s live. Today is ${today} — use ${todaysCode}.`;
+    } else {
+      codeInput.value = canonical;
       landingError.textContent = 'Press "Join" to watch this live.';
     }
   })();
