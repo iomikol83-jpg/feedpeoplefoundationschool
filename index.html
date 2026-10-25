@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CLA$$APP(JERRY) — Live Stage</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
 <style>
   :root{
     --bg:#0a0d13; --panel:#111621; --panel-2:#171e2c; --border:#222c3f;
@@ -97,8 +98,10 @@
   .board-label{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:1.6px;
     text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:14px;flex-shrink:0}
   .board-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);flex-shrink:0}
+  .board.lessons-mode .board-dot{background:#ff0033;box-shadow:0 0 10px #ff0033}
   .board-colors{display:none;gap:6px;margin-left:auto;align-items:center}
   .board-colors.show{display:flex}
+  .board.lessons-mode .board-colors{display:none !important}
   .swatch-label{position:relative;display:flex;align-items:center;gap:5px;cursor:pointer;
     font-size:10px;font-weight:700;letter-spacing:.4px;padding:4px 8px;border-radius:8px;
     background:var(--panel-2);border:1px solid var(--border);color:var(--muted);
@@ -116,6 +119,95 @@
   #boardView.empty{color:#4a5670;font-weight:500}
   #boardInput::-webkit-scrollbar,#boardView::-webkit-scrollbar{width:6px}
   #boardInput::-webkit-scrollbar-thumb,#boardView::-webkit-scrollbar-thumb{background:#2a3448;border-radius:99px}
+
+  /* ---------- LESSONS PANEL + YT SLOTS ---------- */
+  .lessons-panel{display:none;flex:1;flex-direction:column;gap:10px;min-height:0}
+  .board.lessons-mode .lessons-panel{display:flex}
+  .board.lessons-mode #boardInput,
+  .board.lessons-mode #boardView{display:none}
+  .board.viewer-mode .lessons-add-row,
+  .board.viewer-mode .lessons-list{display:none}
+
+  .lessons-video-wrap{
+    position:relative;width:100%;flex:1;min-height:0;
+    background:#000;border-radius:14px;overflow:hidden;
+    border:1px solid var(--border);box-shadow:0 12px 40px rgba(0,0,0,.5)
+  }
+  .yt-slot{position:absolute;inset:0;width:100%;height:100%;z-index:2}
+  .yt-slot > div{width:100%;height:100%}
+  .yt-slot iframe{
+    position:absolute !important;inset:0 !important;
+    width:100% !important;height:100% !important;border:0 !important
+  }
+
+  .lessons-empty{
+    position:absolute;inset:0;display:flex;flex-direction:column;z-index:1;
+    align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;
+    background:radial-gradient(600px 400px at 50% 0%, rgba(79,140,255,.12), transparent 70%), #0b0f16;
+  }
+  .lessons-video-wrap.has-video .lessons-empty{display:none}
+  .lessons-empty-icon{font-size:44px;opacity:.7}
+  .lessons-empty-text{font-size:15px;font-weight:700;color:var(--text)}
+  .lessons-empty-sub{font-size:12.5px;color:var(--muted);max-width:260px;line-height:1.5}
+  .board.viewer-mode .lessons-empty-sub,
+  .board.viewer-mode .lessons-channel-btn{display:none}
+  .lessons-channel-btn{
+    display:inline-flex;align-items:center;gap:8px;margin-top:6px;
+    padding:10px 16px;border-radius:11px;
+    background:linear-gradient(120deg,#ff0033,#c4302b);
+    color:#fff;font-size:13px;font-weight:700;text-decoration:none;
+    box-shadow:0 8px 24px rgba(255,0,51,.28)
+  }
+  .lessons-channel-btn:hover{filter:brightness(1.1)}
+
+  .lessons-add-row{display:flex;gap:8px;flex-shrink:0}
+  .lessons-add-row input{
+    flex:1;min-width:0;background:var(--panel-2);border:1px solid var(--border);
+    border-radius:11px;padding:11px 13px;color:var(--text);font-size:13px;outline:none;
+    transition:border-color .2s
+  }
+  .lessons-add-row input:focus{border-color:var(--accent)}
+  .lessons-add-row input::placeholder{color:#5b6780}
+  .lessons-add-row button{
+    padding:0 16px;border-radius:11px;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;
+    background:linear-gradient(120deg,var(--accent),var(--accent-2))
+  }
+
+  .lessons-list{
+    display:flex;gap:8px;overflow-x:auto;flex-shrink:0;padding:2px 0 4px;
+    scrollbar-width:none
+  }
+  .lessons-list::-webkit-scrollbar{display:none}
+  .lesson-card{
+    position:relative;flex-shrink:0;width:132px;border-radius:11px;overflow:hidden;
+    background:var(--panel-2);border:1px solid var(--border);cursor:pointer;
+    transition:border-color .16s, transform .12s
+  }
+  .lesson-card:hover{border-color:#33415c;transform:translateY(-1px)}
+  .lesson-card.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(79,140,255,.28)}
+  .lesson-card .thumb{
+    width:100%;aspect-ratio:16/9;background:#0b0f16 center/cover no-repeat;
+    position:relative
+  }
+  .lesson-card .thumb::after{
+    content:'▶';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:22px;color:#fff;background:rgba(0,0,0,.28);opacity:0;transition:opacity .16s
+  }
+  .lesson-card:hover .thumb::after{opacity:1}
+  .lesson-card .title{
+    padding:7px 9px;font-size:10.5px;font-weight:700;color:var(--text);line-height:1.35;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  }
+  .lesson-card .remove{
+    position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;
+    background:rgba(5,7,11,.8);border:1px solid rgba(255,255,255,.15);color:#fff;
+    font-size:11px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;
+    opacity:0;transition:opacity .16s
+  }
+  .lesson-card:hover .remove{opacity:1}
+  .lessons-empty-note{
+    font-size:11.5px;color:var(--muted);padding:4px 2px;line-height:1.5
+  }
 
   .screenlight{position:absolute;inset:0;z-index:8;background:#fff;display:none}
   .screenlight.on{display:block}
@@ -236,6 +328,8 @@
   .ctrl.rec.on{background:rgba(255,77,106,.22);border-color:rgba(255,77,106,.6);color:#ff8fa2}
   .ctrl.wave{background:rgba(255,214,79,.14);border-color:rgba(255,214,79,.4);color:#ffdf7a}
   .ctrl.wave.on{background:rgba(255,77,106,.2);border-color:rgba(255,77,106,.55);color:#ff8fa2}
+  .ctrl.lessons{background:rgba(255,0,51,.14);border-color:rgba(255,0,51,.4);color:#ff8fa2}
+  .ctrl.lessons.on{background:rgba(255,0,51,.28);border-color:rgba(255,0,51,.7);color:#fff}
   .ctrl.danger{background:linear-gradient(120deg,#e8394f,#ff4d6a);border-color:transparent;color:#fff}
 
   .chat{width:344px;flex-shrink:0;display:flex;flex-direction:column;height:100%;
@@ -313,6 +407,10 @@
     .swatch-label{padding:3px 6px;font-size:9px}
     .swatch{width:13px;height:13px}
     #dayPill{display:none !important}
+    .lessons-empty-icon{font-size:36px}
+    .lessons-empty-text{font-size:14px}
+    .lessons-empty-sub{font-size:11.5px}
+    .lesson-card{width:112px}
   }
   @media (max-width:560px){
     .copy-hint{display:none}
@@ -329,8 +427,8 @@
 <div id="landing" class="screen active">
   <div class="card">
     <div class="logo"><span class="dot"></span><span class="brand">CLA$$APP(JERRY)</span></div>
-    <h1>Go live from your camera.<br><span>One Jerry code per day.</span></h1>
-    <p class="sub">Only the admin can start a live. Each day has a fixed Jerry code like <strong style="color:var(--accent)">lunJerry1</strong> — day prefix, "Jerry", then a day number. Up to 8 guests, filters, flip camera, radio & recording.</p>
+    <h1>Go live from your camera.<br><span>Board, synced video lessons & guests.</span></h1>
+    <p class="sub">Only the admin can start a live. Each day has a fixed Jerry code like <strong style="color:var(--accent)">lunJerry1</strong>. Play video lessons from <strong>@misterjerryht</strong> and every viewer sees them in sync. Up to 8 guests, filters, radio & recording.</p>
     <button id="btnGoLive" class="btn primary"><span>●</span> Go Live (Admin)</button>
     <div class="divider">or join a live</div>
     <div class="join-row">
@@ -380,7 +478,7 @@
     <div class="board" id="board">
       <div class="board-label">
         <span class="board-dot"></span>
-        <span>On‑air board</span>
+        <span id="boardLabelText">On‑air board</span>
         <div class="board-colors" id="boardColors">
           <label class="swatch-label" title="Board text color">
             <span class="swatch" id="boardTextSwatch" style="background:#e9eefb"></span>
@@ -398,6 +496,26 @@
         <textarea id="boardInput" spellcheck="false"
           placeholder="Start typing — everyone watching will see it live…"></textarea>
         <div id="boardView"></div>
+
+        <!-- LESSONS PANEL -->
+        <div class="lessons-panel" id="lessonsPanel">
+          <div class="lessons-video-wrap" id="lessonsVideoWrap">
+            <div class="yt-slot" id="ytSlotHost"><div id="ytPlayerHost"></div></div>
+            <div class="yt-slot" id="ytSlotViewer"><div id="ytPlayerViewer"></div></div>
+            <div class="lessons-empty" id="lessonsEmpty">
+              <div class="lessons-empty-icon">📺</div>
+              <div class="lessons-empty-text">Video lessons play here</div>
+              <div class="lessons-empty-sub">Paste a YouTube link below, or open the channel to grab videos.</div>
+              <a class="lessons-channel-btn" href="https://youtube.com/@misterjerryht" target="_blank" rel="noopener">▶ Open @misterjerryht</a>
+            </div>
+          </div>
+          <div class="lessons-add-row">
+            <input id="lessonsUrlInput" placeholder="Paste a YouTube video URL…" autocomplete="off" spellcheck="false">
+            <button id="lessonsAddBtn" type="button">Add</button>
+          </div>
+          <div class="lessons-list" id="lessonsList"></div>
+        </div>
+
       </div>
     </div>
 
@@ -416,7 +534,7 @@
     <div id="listenPrompt">
       <div class="lp-icon">🔊</div>
       <div class="lp-text">Tap to hear the stage</div>
-      <div class="lp-sub">You'll hear the host and every guest on stage</div>
+      <div class="lp-sub">You'll hear the host, every guest, and any video lessons</div>
     </div>
 
     <div class="overlay-top">
@@ -450,6 +568,7 @@
       <button class="ctrl" id="flipBtn" title="Switch front/back camera" style="display:none">🔄</button>
       <button class="ctrl flash" id="flashBtn" title="LED flash / light" style="display:none">🔦 Flash</button>
       <button class="ctrl" id="filtersBtn" title="Video filters" style="display:none">✨</button>
+      <button class="ctrl lessons" id="lessonsBtn" title="Play video lessons from @misterjerryht" style="display:none">📺 Lessons</button>
       <button class="ctrl rec" id="recBtn" title="Record live" style="display:none">⏺ Rec</button>
       <button class="ctrl wave" id="waveBtn" title="Wave to join stage" style="display:none">✋ Wave</button>
       <button class="ctrl" id="guestRadioBtn" title="Radio mode" style="display:none">📻 Radio</button>
@@ -477,61 +596,99 @@
 
   /* ================= CONFIG ================= */
   const APP_NAME       = 'CLA$$APP(JERRY)';
+  const CHANNEL_URL    = 'https://youtube.com/@misterjerryht';
   const ADMIN_PASSWORD = 'admin123';
-  const ID_PREFIX      = 'classapp-jerry-v4-';
-  const CODE_LEN       = 9;             // day + Jerry + number, e.g. lunJerry1
+  const ID_PREFIX      = 'classapp-jerry-v6-';
+  const CODE_LEN       = 9;
   const MAX_GUESTS     = 8;
   const DEFAULT_TEXT_COLOR = '#e9eefb';
   const DEFAULT_BG_COLOR   = '#0a0d13';
   const CANVAS_SIZE    = 720;
   const TARGET_FPS     = 30;
+  const LESSONS_KEY    = 'classapp_lessons_v1';
+  const SYNC_INTERVAL  = 500;   // ms poll for host state
+  const SYNC_PERIODIC  = 2000;  // ms periodic broadcast
+  const DRIFT_THRESH   = 2.0;   // seconds — viewer re-seeks if drift > this
 
-  /* ==== JERRY CODES — ONE PER DAY (lun=Monday … dim=Sunday) ==== */
+  /* ==== JERRY CODES — ONE PER DAY ==== */
   const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const DAY_CODES = [
-    'dimJerry7',   // Sunday    (dimanche)
-    'lunJerry1',   // Monday    (lundi)
-    'marJerry2',   // Tuesday   (mardi)
-    'merJerry3',   // Wednesday (mercredi)
-    'jeuJerry4',   // Thursday  (jeudi)
-    'venJerry5',   // Friday    (vendredi)
-    'samJerry6'    // Saturday  (samedi)
-  ];
-
+  const DAY_CODES = ['dimJerry7','lunJerry1','marJerry2','merJerry3','jeuJerry4','venJerry5','samJerry6'];
   function todayName() { return DAY_NAMES[new Date().getDay()]; }
   function todayCode() { return DAY_CODES[new Date().getDay()]; }
   function canonicalCode(input) {
     const lower = String(input || '').trim().toLowerCase();
-    for (const dc of DAY_CODES) {
-      if (dc.toLowerCase() === lower) return dc;
-    }
+    for (const dc of DAY_CODES) if (dc.toLowerCase() === lower) return dc;
     return null;
   }
   function dayOfCode(code) {
-    const canonical = canonicalCode(code);
-    if (!canonical) return null;
-    const i = DAY_CODES.indexOf(canonical);
-    return i >= 0 ? DAY_NAMES[i] : null;
+    const c = canonicalCode(code); if (!c) return null;
+    const i = DAY_CODES.indexOf(c); return i >= 0 ? DAY_NAMES[i] : null;
   }
   function sanitizeCode(raw) {
     return String(raw || '').replace(/[^A-Za-z0-9]/g, '').slice(0, CODE_LEN);
   }
 
+  /* ==== YouTube URL helpers ==== */
+  function extractVideoId(input) {
+    const s = String(input || '').trim();
+    if (!s) return null;
+    if (/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+    try {
+      const u = new URL(s.startsWith('http') ? s : 'https://' + s);
+      const host = u.hostname.replace(/^www\./, '');
+      if (host === 'youtu.be') {
+        const id = u.pathname.split('/').filter(Boolean)[0];
+        return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
+      }
+      if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'music.youtube.com') {
+        const v = u.searchParams.get('v');
+        if (v && /^[A-Za-z0-9_-]{11}$/.test(v)) return v;
+        const m = u.pathname.match(/\/(embed|shorts|v)\/([A-Za-z0-9_-]{11})/);
+        if (m) return m[2];
+      }
+    } catch (e) {}
+    const m = s.match(/([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+  const ytThumb = id => `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
+
+  /* ==== YouTube API globals ==== */
+  let ytApiReady = false;
+  let hostYtPlayer = null;
+  let hostYtReady = false;
+  let hostYtVideoId = null;
+  let hostPendingVideo = null;
+  let hostLastSentAt = 0;
+  let hostLastState = -1;
+  let hostLastTime = 0;
+  let hostLastCheck = 0;
+
+  let viewerYtPlayer = null;
+  let viewerYtReady = false;
+  let viewerYtVideoId = null;
+  let viewerPendingSync = null;
+
+  window.onYouTubeIframeAPIReady = () => {
+    ytApiReady = true;
+    if (hostPendingVideo) { hostEnsurePlayer(hostPendingVideo); hostPendingVideo = null; }
+    if (viewerPendingSync) { viewerEnsurePlayer(viewerPendingSync); viewerPendingSync = null; }
+  };
+
   const FILTERS = [
-    { id:'natural', label:'Natural', css:'none',                                                  beauty:0    },
-    { id:'beauty',  label:'Beauty',  css:'brightness(1.06) saturate(1.06)',                       beauty:0.55 },
-    { id:'glow',    label:'Glow',    css:'brightness(1.12) saturate(1.15) contrast(1.04)',        beauty:0.40 },
-    { id:'vivid',   label:'Vivid',   css:'saturate(1.55) contrast(1.12)',                         beauty:0.15 },
-    { id:'pop',     label:'Pop',     css:'saturate(1.85) contrast(1.18) brightness(1.03)',        beauty:0.20 },
+    { id:'natural', label:'Natural', css:'none', beauty:0 },
+    { id:'beauty',  label:'Beauty',  css:'brightness(1.06) saturate(1.06)', beauty:0.55 },
+    { id:'glow',    label:'Glow',    css:'brightness(1.12) saturate(1.15) contrast(1.04)', beauty:0.40 },
+    { id:'vivid',   label:'Vivid',   css:'saturate(1.55) contrast(1.12)', beauty:0.15 },
+    { id:'pop',     label:'Pop',     css:'saturate(1.85) contrast(1.18) brightness(1.03)', beauty:0.20 },
     { id:'warm',    label:'Warm',    css:'sepia(.22) saturate(1.28) brightness(1.06) hue-rotate(-6deg)', beauty:0.25 },
     { id:'cool',    label:'Cool',    css:'saturate(1.15) hue-rotate(15deg) brightness(1.04) contrast(1.06)', beauty:0.10 },
-    { id:'cinema',  label:'Cinema',  css:'contrast(1.22) saturate(.88) brightness(.96)',          beauty:0    },
+    { id:'cinema',  label:'Cinema',  css:'contrast(1.22) saturate(.88) brightness(.96)', beauty:0 },
     { id:'film',    label:'Film',    css:'sepia(.35) saturate(1.12) contrast(1.08) brightness(1.04)', beauty:0.20 },
-    { id:'fade',    label:'Fade',    css:'contrast(.88) brightness(1.1) saturate(.88)',           beauty:0.30 },
-    { id:'mono',    label:'Mono',    css:'grayscale(1) contrast(1.15) brightness(1.05)',          beauty:0    },
-    { id:'noir',    label:'Noir',    css:'grayscale(1) contrast(1.5) brightness(.92)',            beauty:0    },
+    { id:'fade',    label:'Fade',    css:'contrast(.88) brightness(1.1) saturate(.88)', beauty:0.30 },
+    { id:'mono',    label:'Mono',    css:'grayscale(1) contrast(1.15) brightness(1.05)', beauty:0 },
+    { id:'noir',    label:'Noir',    css:'grayscale(1) contrast(1.5) brightness(.92)', beauty:0 },
     { id:'vintage', label:'Vintage', css:'sepia(.55) contrast(1.08) saturate(.85) brightness(1.02)', beauty:0.20 },
-    { id:'dreamy',  label:'Dreamy',  css:'brightness(1.15) saturate(1.12) contrast(.94)',         beauty:0.60 }
+    { id:'dreamy',  label:'Dreamy',  css:'brightness(1.15) saturate(1.12) contrast(.94)', beauty:0.60 }
   ];
 
   /* ================= AUDIO BUS ================= */
@@ -685,6 +842,7 @@
   const room         = $('#room');
   const stage        = $('#stage');
   const boardEl      = $('#board');
+  const boardLabelText = $('#boardLabelText');
   const boardColors  = $('#boardColors');
   const boardTextColorEl = $('#boardTextColor');
   const boardBgColorEl   = $('#boardBgColor');
@@ -710,6 +868,7 @@
   const flipBtn      = $('#flipBtn');
   const flashBtn     = $('#flashBtn');
   const filtersBtn   = $('#filtersBtn');
+  const lessonsBtn   = $('#lessonsBtn');
   const recBtn       = $('#recBtn');
   const waveBtn      = $('#waveBtn');
   const guestRadioBtn= $('#guestRadioBtn');
@@ -739,6 +898,14 @@
   const listenPrompt = $('#listenPrompt');
   const todayNameEl  = $('#todayName');
   const todayCodeEl  = $('#todayCode');
+  const lessonsPanel = $('#lessonsPanel');
+  const lessonsVideoWrap = $('#lessonsVideoWrap');
+  const lessonsEmpty = $('#lessonsEmpty');
+  const lessonsUrlInput = $('#lessonsUrlInput');
+  const lessonsAddBtn = $('#lessonsAddBtn');
+  const lessonsList   = $('#lessonsList');
+  const ytSlotHost    = $('#ytSlotHost');
+  const ytSlotViewer  = $('#ytSlotViewer');
 
   /* ================= STATE ================= */
   const state = {
@@ -752,7 +919,10 @@
     filterId: 'natural', filterCss: 'none', filterBeauty: 0,
     torchSupported: false, torch: false, screenLight: false, filtersOpen: false,
     isGuest: false, myGuestMode: null, myGuestName: '',
-    pendingWaveMode: 'camera', recording: null, facingMode: 'user'
+    pendingWaveMode: 'camera', recording: null, facingMode: 'user',
+    lessonsMode: false,
+    lessons: [],
+    activeLessonId: null
   };
   let boardTimer = null;
 
@@ -765,13 +935,8 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   const CAM_CONSTRAINTS = (facing) => ({
-    video: {
-      facingMode: facing,
-      width: { ideal: 1280, max: 1920 },
-      height: { ideal: 720, max: 1080 },
-      frameRate: { ideal: 30, max: 30 },
-      aspectRatio: { ideal: 16 / 9 }
-    },
+    video: { facingMode: facing, width: { ideal: 1280, max: 1920 }, height: { ideal: 720, max: 1080 },
+      frameRate: { ideal: 30, max: 30 }, aspectRatio: { ideal: 16 / 9 } },
     audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
   });
 
@@ -780,19 +945,365 @@
     todayCodeEl.textContent = todayCode();
     dayText.textContent = todayName();
   }
-  refreshDayHint();
-  setInterval(refreshDayHint, 60000);
+  refreshDayHint(); setInterval(refreshDayHint, 60000);
 
-  function ensureAudioBus() {
-    if (!state.audioBus) state.audioBus = new AudioBus();
-    state.audioBus.init();
-    state.audioBus.setMuted(!state.soundOn);
-    return state.audioBus;
-  }
   function updateSoundButton() {
     soundBtn.classList.toggle('on', state.soundOn);
     soundBtn.textContent = state.soundOn ? '🔊' : '🔇';
     listenPrompt.classList.toggle('show', state.role === 'viewer' && !state.soundOn);
+  }
+
+  function currentLessonTitle() {
+    const item = state.lessons.find(x => x.id === state.activeLessonId);
+    return item ? item.title : 'Video lesson';
+  }
+
+  /* ================= YOUTUBE — HOST ================= */
+  function hostEnsurePlayer(videoId) {
+    if (!ytApiReady) { hostPendingVideo = videoId; return; }
+    if (hostYtPlayer && hostYtReady) {
+      hostYtPlayer.loadVideoById(videoId, 0);
+      hostYtVideoId = videoId;
+      lessonsVideoWrap.classList.add('has-video');
+      return;
+    }
+    hostYtVideoId = videoId;
+    hostYtPlayer = new YT.Player('ytPlayerHost', {
+      videoId,
+      width: '100%',
+      height: '100%',
+      playerVars: {
+        autoplay: 1, controls: 1, modestbranding: 1, rel: 0,
+        playsinline: 1, enablejsapi: 1, origin: location.origin
+      },
+      events: {
+        onReady: () => {
+          hostYtReady = true;
+          lessonsVideoWrap.classList.add('has-video');
+          hostBroadcastSync();
+        },
+        onStateChange: () => { hostBroadcastSync(); }
+      }
+    });
+  }
+
+  function hostBroadcastSync() {
+    if (state.role !== 'host') return;
+    if (!hostYtPlayer || !hostYtReady) {
+      broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId: null });
+      return;
+    }
+    let videoId = hostYtVideoId;
+    try {
+      const data = hostYtPlayer.getVideoData && hostYtPlayer.getVideoData();
+      if (data && data.video_id) videoId = data.video_id;
+    } catch (e) {}
+    let time = 0, playing = false;
+    try { time = hostYtPlayer.getCurrentTime() || 0; } catch (e) {}
+    try { playing = hostYtPlayer.getPlayerState() === 1; } catch (e) {}
+    broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId, time, playing });
+    hostLastSentAt = Date.now();
+  }
+
+  // Host polling loop — detects state changes, seeks, and periodic refresh
+  setInterval(() => {
+    if (state.role !== 'host' || !state.lessonsMode) return;
+    if (!hostYtPlayer || !hostYtReady) return;
+    let curState = -1, curTime = 0;
+    try { curState = hostYtPlayer.getPlayerState(); curTime = hostYtPlayer.getCurrentTime(); } catch (e) { return; }
+    const now = Date.now();
+
+    let seekDetected = false;
+    if (hostLastCheck > 0) {
+      const elapsed = (now - hostLastCheck) / 1000;
+      const expected = curState === 1 ? elapsed : 0;
+      const actual = curTime - hostLastTime;
+      if (Math.abs(actual - expected) > 1.5) seekDetected = true;
+    }
+    const stateChanged = curState !== hostLastState;
+    const periodic = now - hostLastSentAt > SYNC_PERIODIC;
+
+    if (stateChanged || seekDetected || periodic) {
+      hostBroadcastSync();
+    }
+    hostLastState = curState;
+    hostLastTime = curTime;
+    hostLastCheck = now;
+  }, SYNC_INTERVAL);
+
+  function hostDestroyPlayer() {
+    if (hostYtPlayer) {
+      try { hostYtPlayer.destroy(); } catch (e) {}
+    }
+    hostYtPlayer = null;
+    hostYtReady = false;
+    hostYtVideoId = null;
+    hostPendingVideo = null;
+    hostLastState = -1;
+    hostLastTime = 0;
+    hostLastCheck = 0;
+    lessonsVideoWrap.classList.remove('has-video');
+    // Rebuild the div (destroy removes the iframe and the inner div)
+    const newDiv = document.createElement('div');
+    newDiv.id = 'ytPlayerHost';
+    ytSlotHost.innerHTML = '';
+    ytSlotHost.appendChild(newDiv);
+  }
+
+  /* ================= YOUTUBE — VIEWER ================= */
+  function viewerEnsurePlayer(sync) {
+    if (!ytApiReady) { viewerPendingSync = sync; return; }
+    if (viewerYtPlayer && viewerYtReady) {
+      // load different video
+      if (sync.videoId && viewerYtVideoId !== sync.videoId) {
+        viewerYtVideoId = sync.videoId;
+        try { viewerYtPlayer.loadVideoById(sync.videoId, sync.time || 0); } catch (e) {}
+        if (!sync.playing) setTimeout(() => { try { viewerYtPlayer.pauseVideo(); } catch (e) {} }, 300);
+      }
+      return;
+    }
+    viewerYtVideoId = sync.videoId;
+    viewerYtPlayer = new YT.Player('ytPlayerViewer', {
+      videoId: sync.videoId,
+      width: '100%',
+      height: '100%',
+      playerVars: {
+        autoplay: sync.playing ? 1 : 0,
+        controls: 0, modestbranding: 1, rel: 0, playsinline: 1,
+        mute: 1, disablekb: 1, fs: 0, iv_load_policy: 3,
+        enablejsapi: 1, origin: location.origin
+      },
+      events: {
+        onReady: (e) => {
+          viewerYtReady = true;
+          lessonsVideoWrap.classList.add('has-video');
+          if (sync.time > 0) { try { e.target.seekTo(sync.time, true); } catch (er) {} }
+          if (sync.playing) {
+            try { e.target.playVideo(); } catch (er) {}
+            // Try to unmute if sound is on (user has interacted with page already)
+            if (state.soundOn) {
+              setTimeout(() => {
+                if (viewerYtPlayer && viewerYtReady) {
+                  try { viewerYtPlayer.unMute(); } catch (er) {}
+                }
+              }, 300);
+            }
+          } else {
+            try { e.target.pauseVideo(); } catch (er) {}
+          }
+        }
+      }
+    });
+  }
+
+  function viewerApplySync(data) {
+    if (!data || data.on !== true) return;
+    if (!data.videoId) return;      // panel shown but no video yet
+
+    if (!viewerYtPlayer || !viewerYtReady) {
+      viewerEnsurePlayer(data);
+      return;
+    }
+
+    // Different video → load
+    if (data.videoId !== viewerYtVideoId) {
+      viewerYtVideoId = data.videoId;
+      try { viewerYtPlayer.loadVideoById(data.videoId, data.time || 0); } catch (e) {}
+      if (!data.playing) setTimeout(() => { try { viewerYtPlayer.pauseVideo(); } catch (e) {} }, 300);
+      return;
+    }
+
+    // Same video → correct drift / play state
+    let curTime = 0, curState = -1;
+    try { curTime = viewerYtPlayer.getCurrentTime() || 0; } catch (e) {}
+    try { curState = viewerYtPlayer.getPlayerState(); } catch (e) {}
+
+    if (data.playing) {
+      if (curState !== 1) { try { viewerYtPlayer.playVideo(); } catch (e) {} }
+      if (Math.abs(curTime - data.time) > DRIFT_THRESH) {
+        try { viewerYtPlayer.seekTo(data.time, true); } catch (e) {}
+      }
+    } else {
+      if (curState === 1) { try { viewerYtPlayer.pauseVideo(); } catch (e) {} }
+      if (Math.abs(curTime - data.time) > 1.0) {
+        try { viewerYtPlayer.seekTo(data.time, true); } catch (e) {}
+      }
+    }
+  }
+
+  function viewerDestroyPlayer() {
+    if (viewerYtPlayer) {
+      try { viewerYtPlayer.destroy(); } catch (e) {}
+    }
+    viewerYtPlayer = null;
+    viewerYtReady = false;
+    viewerYtVideoId = null;
+    viewerPendingSync = null;
+    lessonsVideoWrap.classList.remove('has-video');
+    const newDiv = document.createElement('div');
+    newDiv.id = 'ytPlayerViewer';
+    ytSlotViewer.innerHTML = '';
+    ytSlotViewer.appendChild(newDiv);
+  }
+
+  /* ================= LESSONS UI ================= */
+  function loadLessons() {
+    try {
+      const raw = localStorage.getItem(LESSONS_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      return arr
+        .filter(o => o && typeof o.id === 'string' && /^[A-Za-z0-9_-]{11}$/.test(o.id))
+        .map(o => ({ id: o.id, title: String(o.title || ('Video ' + o.id.slice(0,6))) }));
+    } catch (e) { return []; }
+  }
+  function saveLessons() {
+    try { localStorage.setItem(LESSONS_KEY, JSON.stringify(state.lessons)); } catch (e) {}
+  }
+  function renderLessonsList() {
+    lessonsList.innerHTML = '';
+    if (!state.lessons.length) {
+      const note = document.createElement('div');
+      note.className = 'lessons-empty-note';
+      note.textContent = 'No lessons yet — paste a video URL above to add one.';
+      lessonsList.appendChild(note);
+      return;
+    }
+    state.lessons.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'lesson-card' + (item.id === state.activeLessonId ? ' active' : '');
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+      thumb.style.backgroundImage = `url("${ytThumb(item.id)}")`;
+      const title = document.createElement('div');
+      title.className = 'title';
+      title.textContent = item.title;
+      const rm = document.createElement('button');
+      rm.className = 'remove'; rm.textContent = '×'; rm.title = 'Remove';
+      rm.addEventListener('click', e => {
+        e.stopPropagation();
+        state.lessons = state.lessons.filter(x => x.id !== item.id);
+        if (state.activeLessonId === item.id) {
+          state.activeLessonId = null;
+          lessonsVideoWrap.classList.remove('has-video');
+          if (hostYtPlayer && hostYtReady) { try { hostYtPlayer.stopVideo(); } catch (er) {} }
+        }
+        saveLessons(); renderLessonsList();
+      });
+      card.appendChild(thumb); card.appendChild(title); card.appendChild(rm);
+      card.addEventListener('click', () => playLesson(item.id));
+      lessonsList.appendChild(card);
+    });
+  }
+
+  function playLesson(id) {
+    if (!id) return;
+    state.activeLessonId = id;
+    hostEnsurePlayer(id);
+    renderLessonsList();
+    // Immediate broadcast so viewers switch right away
+    setTimeout(hostBroadcastSync, 100);
+  }
+
+  function addLessonFromUrl(raw) {
+    const id = extractVideoId(raw);
+    if (!id) {
+      if (lessonsUrlInput) {
+        lessonsUrlInput.style.borderColor = 'var(--danger)';
+        setTimeout(() => { lessonsUrlInput.style.borderColor = ''; }, 1200);
+      }
+      return false;
+    }
+    if (!state.lessons.some(x => x.id === id)) {
+      state.lessons.unshift({ id, title: 'Video ' + id.slice(0, 6) });
+      saveLessons();
+      fetch('https://noembed.com/embed?url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + id))
+        .then(r => r.json())
+        .then(d => {
+          if (d && d.title) {
+            const item = state.lessons.find(x => x.id === id);
+            if (item) { item.title = String(d.title).slice(0, 60); saveLessons(); renderLessonsList(); }
+          }
+        })
+        .catch(() => {});
+    }
+    playLesson(id);
+    if (lessonsUrlInput) lessonsUrlInput.value = '';
+    return true;
+  }
+
+  function enterLessonsMode() {
+    state.lessonsMode = true;
+    boardEl.classList.add('lessons-mode');
+    boardLabelText.textContent = '📺 Video lessons · @misterjerryht';
+    lessonsBtn.classList.add('on');
+    lessonsBtn.textContent = '📝 Board';
+    renderLessonsList();
+    if (state.activeLessonId) playLesson(state.activeLessonId);
+    // Tell viewers
+    hostBroadcastSync();
+    if (state.activeLessonId === null) {
+      broadcast({ type:'lesson-sync', on: true, videoId: null });
+    }
+    setTimeout(() => lessonsUrlInput.focus(), 100);
+  }
+  function exitLessonsMode() {
+    state.lessonsMode = false;
+    boardEl.classList.remove('lessons-mode');
+    boardLabelText.textContent = 'On‑air board';
+    lessonsBtn.classList.remove('on');
+    lessonsBtn.textContent = '📺 Lessons';
+    // Pause host video
+    if (hostYtPlayer && hostYtReady) { try { hostYtPlayer.pauseVideo(); } catch (e) {} }
+    // Tell viewers
+    broadcast({ type:'lesson-sync', on: false, videoId: null });
+    setTimeout(() => boardInput.focus(), 100);
+  }
+  function toggleLessonsMode() {
+    if (state.lessonsMode) exitLessonsMode();
+    else enterLessonsMode();
+  }
+  lessonsBtn.addEventListener('click', toggleLessonsMode);
+  lessonsAddBtn.addEventListener('click', () => addLessonFromUrl(lessonsUrlInput.value));
+  lessonsUrlInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addLessonFromUrl(lessonsUrlInput.value); }
+  });
+  lessonsUrlInput.addEventListener('paste', () => {
+    setTimeout(() => {
+      const id = extractVideoId(lessonsUrlInput.value);
+      if (id) addLessonFromUrl(lessonsUrlInput.value);
+    }, 30);
+  });
+
+  /* ================= VIEWER — LESSON HANDLER ================= */
+  function viewerHandleLessonSync(data) {
+    if (!data) return;
+    if (data.on !== true) {
+      // Hide lessons mode
+      if (state.lessonsMode) {
+        state.lessonsMode = false;
+        boardEl.classList.remove('lessons-mode');
+        boardLabelText.textContent = 'On‑air board';
+        if (viewerYtPlayer && viewerYtReady) { try { viewerYtPlayer.pauseVideo(); } catch (e) {} }
+      }
+      return;
+    }
+
+    // Enable lessons mode on viewer
+    if (!state.lessonsMode) {
+      state.lessonsMode = true;
+      boardEl.classList.add('lessons-mode');
+      boardLabelText.textContent = '📺 Video lessons · @misterjerryht';
+    }
+
+    if (!data.videoId) return;
+
+    if (!viewerYtPlayer || !viewerYtReady) {
+      viewerEnsurePlayer(data);
+      return;
+    }
+    viewerApplySync(data);
   }
 
   /* ================= BOARD STYLE ================= */
@@ -901,17 +1412,11 @@
     let fresh;
     try {
       fresh = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: newFacing,
-          width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 },
-          frameRate: { ideal: 30, max: 30 }
-        },
+        video: { facingMode: newFacing, width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 }, frameRate: { ideal: 30, max: 30 } },
         audio: false
       });
-    } catch (e) {
-      addMessage('Could not switch camera: ' + (e.message || e.name), 'system'); return;
-    }
+    } catch (e) { addMessage('Could not switch camera: ' + (e.message || e.name), 'system'); return; }
     const newTrack = fresh.getVideoTracks()[0];
     newTrack.enabled = oldTrack.enabled;
     const audioTracks = stream.getAudioTracks();
@@ -980,11 +1485,18 @@
       state.audioBus.setMuted(!state.soundOn);
       if (state.soundOn) state.audioBus.resume();
     }
+    // Also toggle YouTube player mute on viewer side
+    if (state.role === 'viewer' && viewerYtPlayer && viewerYtReady) {
+      try { if (state.soundOn) viewerYtPlayer.unMute(); else viewerYtPlayer.mute(); } catch (e) {}
+    }
   }
   soundBtn.addEventListener('click', toggleSound);
   listenPrompt.addEventListener('click', () => {
     state.soundOn = true; updateSoundButton();
     if (state.audioBus) { state.audioBus.setMuted(false); state.audioBus.resume(); }
+    if (state.role === 'viewer' && viewerYtPlayer && viewerYtReady) {
+      try { viewerYtPlayer.unMute(); } catch (e) {}
+    }
   });
 
   /* ================= DATA ================= */
@@ -1002,6 +1514,8 @@
         state.boardBgColor   = data.bgColor   || DEFAULT_BG_COLOR;
         applyBoardStyle();
       }
+    } else if (data.type === 'lesson-sync') {
+      if (state.role === 'viewer') viewerHandleLessonSync(data);
     } else if (data.type === 'count' && state.role === 'viewer') {
       setViewerCount(data.count);
     } else if (data.type === 'wave' && state.role === 'host') {
@@ -1170,17 +1684,21 @@
     }
 
     state.role = 'host';
-    state.code = todayCode();                // ← Jerry code, one per day
+    state.code = todayCode();
     state.boardText = '';
     state.boardTextColor = DEFAULT_TEXT_COLOR;
     state.boardBgColor = DEFAULT_BG_COLOR;
-    state.filterId = 'natural';
-    state.filterCss = 'none';
-    state.filterBeauty = 0;
-    state.facingMode = 'user';
-    state.soundOn = true;
+    state.filterId = 'natural'; state.filterCss = 'none'; state.filterBeauty = 0;
+    state.facingMode = 'user'; state.soundOn = true;
     state.guests.clear(); state.guestRelays = []; state.requests.clear();
     state.torch = false; state.screenLight = false; state.filtersOpen = false;
+    state.lessonsMode = false;
+    state.lessons = loadLessons();
+    state.activeLessonId = null;
+
+    stage.classList.add('role-host');
+    stage.classList.remove('role-viewer');
+    boardEl.classList.remove('viewer-mode');
 
     state.localStream = raw;
     state.pipeline = new FilterPipeline();
@@ -1207,12 +1725,17 @@
     boardView.style.display = 'none';
     boardInput.value = ''; boardView.textContent = '';
     applyBoardStyle();
+    boardLabelText.textContent = 'On‑air board';
+    boardEl.classList.remove('lessons-mode');
 
     micBtn.style.display = '';
     camBtn.style.display = '';
     flipBtn.style.display = '';
     flashBtn.style.display = '';
     filtersBtn.style.display = '';
+    lessonsBtn.style.display = '';
+    lessonsBtn.classList.remove('on');
+    lessonsBtn.textContent = '📺 Lessons';
     recBtn.style.display = '';
     waveBtn.style.display = 'none';
     guestRadioBtn.style.display = 'none';
@@ -1264,6 +1787,18 @@
       if (conn.open) {
         conn.send({ type:'board', text: state.boardText });
         conn.send({ type:'board-style', textColor: state.boardTextColor, bgColor: state.boardBgColor });
+        // Send current lesson state to this new viewer
+        if (state.lessonsMode) {
+          if (hostYtPlayer && hostYtReady) {
+            let videoId = hostYtVideoId, time = 0, playing = false;
+            try { const d = hostYtPlayer.getVideoData(); if (d && d.video_id) videoId = d.video_id; } catch (e) {}
+            try { time = hostYtPlayer.getCurrentTime() || 0; } catch (e) {}
+            try { playing = hostYtPlayer.getPlayerState() === 1; } catch (e) {}
+            conn.send({ type:'lesson-sync', on: true, videoId, time, playing });
+          } else {
+            conn.send({ type:'lesson-sync', on: true, videoId: null });
+          }
+        }
       }
       syncCount();
     };
@@ -1302,6 +1837,12 @@
     state.boardTextColor = DEFAULT_TEXT_COLOR;
     state.boardBgColor = DEFAULT_BG_COLOR;
     state.facingMode = 'user';
+    state.lessonsMode = false;
+    state.activeLessonId = null;
+
+    stage.classList.add('role-viewer');
+    stage.classList.remove('role-host');
+    boardEl.classList.add('viewer-mode');
 
     tilesStrip.querySelectorAll('.tile[data-guestid]').forEach(t => t.remove());
 
@@ -1316,12 +1857,15 @@
     boardView.style.display = '';
     setBoardView('');
     applyBoardStyle();
+    boardLabelText.textContent = 'On‑air board';
+    boardEl.classList.remove('lessons-mode');
 
     micBtn.style.display = 'none';
     camBtn.style.display = 'none';
     flipBtn.style.display = 'none';
     flashBtn.style.display = 'none';
     filtersBtn.style.display = 'none';
+    lessonsBtn.style.display = 'none';
     recBtn.style.display = 'none';
     waveBtn.style.display = '';
     waveBtn.textContent = '✋ Wave';
@@ -1450,12 +1994,7 @@
       attachToTile(state.peer.id, state.guestOutStream);
 
       const call = state.peer.call(ID_PREFIX + state.code, state.guestOutStream, {
-        metadata: {
-          role: 'guest',
-          guestId: state.peer.id,
-          name: state.myGuestName,
-          mode
-        }
+        metadata: { role: 'guest', guestId: state.peer.id, name: state.myGuestName, mode }
       });
       if (call) { call._guestId = state.peer.id; state.calls.push(call); }
 
@@ -1574,40 +2113,28 @@
       for (let n = 0; n < words.length; n++) {
         const test = line + words[n] + ' ';
         if (ctx.measureText(test).width > maxWidth && n > 0) {
-          ctx.fillText(line, x, y);
-          line = words[n] + ' ';
-          y += lineHeight;
+          ctx.fillText(line, x, y); line = words[n] + ' '; y += lineHeight;
         } else { line = test; }
       }
-      ctx.fillText(line, x, y);
-      y += lineHeight;
+      ctx.fillText(line, x, y); y += lineHeight;
     }
   }
   function roundRect(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
+    ctx.beginPath(); ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
   }
   function drawTile(ctx, vid, x, y, size, mirrored) {
     if (!vid || vid.readyState < 2 || !vid.videoWidth) {
-      ctx.fillStyle = '#0b0f16';
-      roundRect(ctx, x, y, size, size, 16); ctx.fill();
-      return;
+      ctx.fillStyle = '#0b0f16'; roundRect(ctx, x, y, size, size, 16); ctx.fill(); return;
     }
     const vw = vid.videoWidth, vh = vid.videoHeight;
     const scale = Math.max(size / vw, size / vh);
     const sw = size / scale, sh = size / scale;
     const sx = (vw - sw) / 2, sy = (vh - sh) / 2;
-    ctx.save();
-    roundRect(ctx, x, y, size, size, 16);
-    ctx.clip();
+    ctx.save(); roundRect(ctx, x, y, size, size, 16); ctx.clip();
     if (mirrored) {
-      ctx.translate(x + size, y);
-      ctx.scale(-1, 1);
+      ctx.translate(x + size, y); ctx.scale(-1, 1);
       ctx.drawImage(vid, sx, sy, sw, sh, 0, 0, size, size);
     } else {
       ctx.drawImage(vid, sx, sy, sw, sh, x, y, size, size);
@@ -1641,14 +2168,8 @@
     if (dest && dest.stream.getAudioTracks().length) tracks.push(...dest.stream.getAudioTracks());
     const combined = new MediaStream(tracks);
 
-    const mimes = [
-      'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
-      'video/mp4;codecs=avc1',
-      'video/mp4',
-      'video/webm;codecs=vp9,opus',
-      'video/webm;codecs=vp8,opus',
-      'video/webm'
-    ];
+    const mimes = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1', 'video/mp4',
+      'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
     let mime = '';
     for (const m of mimes) { if (MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
 
@@ -1677,7 +2198,10 @@
       ctx.fillStyle = state.boardTextColor || '#e9eefb';
       ctx.font = 'bold 34px -apple-system, "Segoe UI", sans-serif';
       ctx.textBaseline = 'top';
-      wrapText(ctx, state.boardText || ('Live on ' + APP_NAME + ' · ' + (state.code || todayCode())), 50, 50, 820, 44);
+      const boardLine = state.lessonsMode
+        ? ('📺 Lesson: ' + currentLessonTitle())
+        : (state.boardText || ('Live on ' + APP_NAME + ' · ' + (state.code || todayCode())));
+      wrapText(ctx, boardLine, 50, 50, 820, 44);
 
       if (hostVideo.readyState >= 2) {
         drawTile(ctx, hostVideo, 900, 50, 340, hostVideo.classList.contains('mirrored'));
@@ -1700,8 +2224,7 @@
         } else {
           const bg = ctx.createLinearGradient(gx, gy, gx + tw, gy + th);
           bg.addColorStop(0, '#14203a'); bg.addColorStop(1, '#0a0e16');
-          ctx.fillStyle = bg;
-          roundRect(ctx, gx, gy, tw, th, 16); ctx.fill();
+          ctx.fillStyle = bg; roundRect(ctx, gx, gy, tw, th, 16); ctx.fill();
           ctx.fillStyle = '#8b9ec4';
           ctx.font = 'bold 40px -apple-system, sans-serif';
           ctx.textAlign = 'center';
@@ -1847,6 +2370,9 @@
     if (state.guestPipeline) { state.guestPipeline.stop(); state.guestPipeline = null; }
     state.guestOutStream = null;
 
+    hostDestroyPlayer();
+    viewerDestroyPlayer();
+
     hostVideo.srcObject = null;
     hostVideo.classList.remove('mirrored');
     hostVideo.style.visibility = 'visible';
@@ -1879,8 +2405,13 @@
     state.guests.clear();
     state.guestViews.clear();
     state.requests.clear();
+    state.lessonsMode = false;
+    state.activeLessonId = null;
 
-    stage.classList.remove('radio', 'filters-open');
+    boardEl.classList.remove('lessons-mode', 'viewer-mode');
+    boardLabelText.textContent = 'On‑air board';
+    stage.classList.remove('role-host', 'role-viewer', 'radio', 'filters-open');
+
     screenlight.classList.remove('on');
     filtersBar.classList.remove('open');
     filtersBtn.classList.remove('on');
@@ -1916,6 +2447,9 @@
     flipBtn.style.display = 'none';
     flashBtn.style.display = 'none';
     filtersBtn.style.display = 'none';
+    lessonsBtn.style.display = 'none';
+    lessonsBtn.classList.remove('on');
+    lessonsBtn.textContent = '📺 Lessons';
     recBtn.style.display = 'none';
     endBtn.textContent = 'End';
 
@@ -2042,6 +2576,8 @@
     if (state.guestStream) state.guestStream.getTracks().forEach(t => t.stop());
     if (state.guestPipeline) state.guestPipeline.stop();
     if (state.audioBus) state.audioBus.stop();
+    try { hostYtPlayer && hostYtPlayer.destroy(); } catch (e) {}
+    try { viewerYtPlayer && viewerYtPlayer.destroy(); } catch (e) {}
   });
 })();
 </script>
