@@ -90,6 +90,44 @@
     transition:border-color .16s, background .16s, color .16s}
   .mode-btn.active{border-color:var(--accent);background:rgba(79,140,255,.18);color:#fff}
 
+  /* ---------- BROWSE MODAL ---------- */
+  .browse-card{max-width:660px;width:100%}
+  .browse-card h2{margin-bottom:4px}
+  .browse-card p{margin-bottom:14px}
+  .browse-tabs{display:flex;gap:8px;margin-bottom:12px}
+  .browse-tab{flex:1;padding:10px 12px;border-radius:11px;background:var(--panel-2);
+    border:1px solid var(--border);font-size:13px;font-weight:650;color:var(--muted);
+    transition:border-color .16s, background .16s, color .16s}
+  .browse-tab:hover{border-color:#33415c}
+  .browse-tab.active{border-color:var(--accent);background:rgba(79,140,255,.16);color:#fff}
+  .browse-search{display:none;gap:8px;margin-bottom:12px}
+  .browse-search.show{display:flex}
+  .browse-search input{flex:1;min-width:0;background:var(--panel-2);border:1px solid var(--border);
+    border-radius:11px;padding:11px 13px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s}
+  .browse-search input:focus{border-color:var(--accent)}
+  .browse-search button{padding:0 18px;border-radius:11px;font-size:13px;font-weight:700;color:#fff;
+    background:linear-gradient(120deg,var(--accent),var(--accent-2));flex-shrink:0}
+  .browse-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;
+    max-height:380px;overflow-y:auto;padding:2px;margin-bottom:14px;
+    overscroll-behavior:contain}
+  .browse-list::-webkit-scrollbar{width:6px}
+  .browse-list::-webkit-scrollbar-thumb{background:#2a3448;border-radius:99px}
+  .browse-video{cursor:pointer;border-radius:10px;overflow:hidden;background:var(--panel-2);
+    border:1px solid var(--border);transition:border-color .16s, transform .12s}
+  .browse-video:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .browse-video .bv-thumb{width:100%;aspect-ratio:16/9;background:#0b0f16 center/cover no-repeat;
+    position:relative}
+  .browse-video .bv-thumb::after{content:'▶';position:absolute;inset:0;display:flex;
+    align-items:center;justify-content:center;font-size:22px;color:#fff;
+    background:rgba(0,0,0,.28);opacity:0;transition:opacity .16s}
+  .browse-video:hover .bv-thumb::after{opacity:1}
+  .browse-video .bv-title{padding:6px 8px;font-size:10.5px;font-weight:650;line-height:1.35;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--text)}
+  .browse-loading,.browse-error{grid-column:1/-1;padding:40px 20px;text-align:center;
+    font-size:13px;color:var(--muted)}
+  .browse-error{color:var(--danger)}
+  .browse-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:2px}
+
   #room{flex-direction:row;position:relative;background:#05070b}
   .stage{position:relative;flex:1;min-width:0;background:#05070b;overflow:hidden}
 
@@ -120,7 +158,6 @@
   #boardInput::-webkit-scrollbar,#boardView::-webkit-scrollbar{width:6px}
   #boardInput::-webkit-scrollbar-thumb,#boardView::-webkit-scrollbar-thumb{background:#2a3448;border-radius:99px}
 
-  /* ---------- LESSONS PANEL + YT SLOTS ---------- */
   .lessons-panel{display:none;flex:1;flex-direction:column;gap:10px;min-height:0}
   .board.lessons-mode .lessons-panel{display:flex}
   .board.lessons-mode #boardInput,
@@ -135,16 +172,12 @@
   }
   .yt-slot{position:absolute;inset:0;width:100%;height:100%;z-index:2}
   .yt-slot > div{width:100%;height:100%}
-  .yt-slot iframe{
-    position:absolute !important;inset:0 !important;
-    width:100% !important;height:100% !important;border:0 !important
-  }
+  .yt-slot iframe{position:absolute !important;inset:0 !important;
+    width:100% !important;height:100% !important;border:0 !important}
 
-  .lessons-empty{
-    position:absolute;inset:0;display:flex;flex-direction:column;z-index:1;
+  .lessons-empty{position:absolute;inset:0;display:flex;flex-direction:column;z-index:1;
     align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;
-    background:radial-gradient(600px 400px at 50% 0%, rgba(79,140,255,.12), transparent 70%), #0b0f16;
-  }
+    background:radial-gradient(600px 400px at 50% 0%, rgba(79,140,255,.12), transparent 70%), #0b0f16}
   .lessons-video-wrap.has-video .lessons-empty{display:none}
   .lessons-empty-icon{font-size:44px;opacity:.7}
   .lessons-empty-text{font-size:15px;font-weight:700;color:var(--text)}
@@ -172,6 +205,12 @@
     padding:0 16px;border-radius:11px;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;
     background:linear-gradient(120deg,var(--accent),var(--accent-2))
   }
+  .lessons-add-row .lessons-browse{
+    background:linear-gradient(120deg,#ff0033,#c4302b);
+    padding:0 14px;font-size:15px;
+    box-shadow:0 6px 18px rgba(255,0,51,.22)
+  }
+  .lessons-add-row .lessons-browse:hover{filter:brightness(1.1)}
 
   .lessons-list{
     display:flex;gap:8px;overflow-x:auto;flex-shrink:0;padding:2px 0 4px;
@@ -205,18 +244,14 @@
     opacity:0;transition:opacity .16s
   }
   .lesson-card:hover .remove{opacity:1}
-  .lessons-empty-note{
-    font-size:11.5px;color:var(--muted);padding:4px 2px;line-height:1.5
-  }
+  .lessons-empty-note{font-size:11.5px;color:var(--muted);padding:4px 2px;line-height:1.5}
 
   .screenlight{position:absolute;inset:0;z-index:8;background:#fff;display:none}
   .screenlight.on{display:block}
-
   video.mirrored{transform:scaleX(-1)}
 
   .tiles-strip{position:absolute;left:20px;right:20px;bottom:92px;z-index:13;
-    display:flex;gap:10px;overflow-x:auto;padding:4px;scrollbar-width:none;
-    transition:bottom .22s ease}
+    display:flex;gap:10px;overflow-x:auto;padding:4px;scrollbar-width:none;transition:bottom .22s ease}
   .tiles-strip::-webkit-scrollbar{display:none}
   .stage.filters-open .tiles-strip{bottom:196px}
 
@@ -411,6 +446,8 @@
     .lessons-empty-text{font-size:14px}
     .lessons-empty-sub{font-size:11.5px}
     .lesson-card{width:112px}
+    .browse-list{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));max-height:300px}
+    .browse-card{padding:22px}
   }
   @media (max-width:560px){
     .copy-hint{display:none}
@@ -427,8 +464,8 @@
 <div id="landing" class="screen active">
   <div class="card">
     <div class="logo"><span class="dot"></span><span class="brand">CLA$$APP(JERRY)</span></div>
-    <h1>Go live from your camera.<br><span>Board, synced video lessons & guests.</span></h1>
-    <p class="sub">Only the admin can start a live. Each day has a fixed Jerry code like <strong style="color:var(--accent)">lunJerry1</strong>. Play video lessons from <strong>@misterjerryht</strong> and every viewer sees them in sync. Up to 8 guests, filters, radio & recording.</p>
+    <h1>Go live from your camera.<br><span>Board, YouTube lessons & guests.</span></h1>
+    <p class="sub">Only the admin can start a live. Each day has a fixed Jerry code like <strong style="color:var(--accent)">lunJerry1</strong>. Browse <strong>@misterjerryht</strong> right inside the app and every viewer sees lessons in sync. Up to 8 guests, filters, radio & recording.</p>
     <button id="btnGoLive" class="btn primary"><span>●</span> Go Live (Admin)</button>
     <div class="divider">or join a live</div>
     <div class="join-row">
@@ -472,6 +509,30 @@
   </div>
 </div>
 
+<!-- BROWSE MODAL -->
+<div id="browseModal" class="modal">
+  <div class="modal-card browse-card">
+    <h2>Browse YouTube</h2>
+    <p>Pick a video from <strong>@misterjerryht</strong> or search for any topic.</p>
+    <div class="browse-tabs">
+      <button class="browse-tab active" data-tab="channel" type="button">📺 @misterjerryht</button>
+      <button class="browse-tab" data-tab="search" type="button">🔎 Search</button>
+    </div>
+    <div class="browse-search" id="browseSearchRow">
+      <input id="browseSearchInput" placeholder="Search YouTube…" autocomplete="off" spellcheck="false">
+      <button id="browseSearchBtn" type="button">Go</button>
+    </div>
+    <div class="browse-list" id="browseList">
+      <div class="browse-loading">Loading videos…</div>
+    </div>
+    <div class="browse-actions">
+      <a href="https://youtube.com/@misterjerryht" target="_blank" rel="noopener" class="btn ghost">↗ Open YouTube</a>
+      <button id="browseReload" class="btn ghost" type="button">↻ Reload</button>
+      <button id="browseClose" class="btn ghost" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
 <div id="room" class="screen">
   <div class="stage" id="stage">
 
@@ -497,7 +558,6 @@
           placeholder="Start typing — everyone watching will see it live…"></textarea>
         <div id="boardView"></div>
 
-        <!-- LESSONS PANEL -->
         <div class="lessons-panel" id="lessonsPanel">
           <div class="lessons-video-wrap" id="lessonsVideoWrap">
             <div class="yt-slot" id="ytSlotHost"><div id="ytPlayerHost"></div></div>
@@ -505,12 +565,13 @@
             <div class="lessons-empty" id="lessonsEmpty">
               <div class="lessons-empty-icon">📺</div>
               <div class="lessons-empty-text">Video lessons play here</div>
-              <div class="lessons-empty-sub">Paste a YouTube link below, or open the channel to grab videos.</div>
+              <div class="lessons-empty-sub">Tap 🔎 to browse @misterjerryht, or paste a YouTube link below.</div>
               <a class="lessons-channel-btn" href="https://youtube.com/@misterjerryht" target="_blank" rel="noopener">▶ Open @misterjerryht</a>
             </div>
           </div>
           <div class="lessons-add-row">
             <input id="lessonsUrlInput" placeholder="Paste a YouTube video URL…" autocomplete="off" spellcheck="false">
+            <button id="lessonsBrowseBtn" type="button" class="lessons-browse" title="Browse YouTube">🔎</button>
             <button id="lessonsAddBtn" type="button">Add</button>
           </div>
           <div class="lessons-list" id="lessonsList"></div>
@@ -596,7 +657,7 @@
 
   /* ================= CONFIG ================= */
   const APP_NAME       = 'CLA$$APP(JERRY)';
-  const CHANNEL_URL    = 'https://youtube.com/@misterjerryht';
+  const CHANNEL_HANDLE = '@misterjerryht';
   const ADMIN_PASSWORD = 'admin123';
   const ID_PREFIX      = 'classapp-jerry-v6-';
   const CODE_LEN       = 9;
@@ -606,11 +667,10 @@
   const CANVAS_SIZE    = 720;
   const TARGET_FPS     = 30;
   const LESSONS_KEY    = 'classapp_lessons_v1';
-  const SYNC_INTERVAL  = 500;   // ms poll for host state
-  const SYNC_PERIODIC  = 2000;  // ms periodic broadcast
-  const DRIFT_THRESH   = 2.0;   // seconds — viewer re-seeks if drift > this
+  const SYNC_INTERVAL  = 500;
+  const SYNC_PERIODIC  = 2000;
+  const DRIFT_THRESH   = 2.0;
 
-  /* ==== JERRY CODES — ONE PER DAY ==== */
   const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const DAY_CODES = ['dimJerry7','lunJerry1','marJerry2','merJerry3','jeuJerry4','venJerry5','samJerry6'];
   function todayName() { return DAY_NAMES[new Date().getDay()]; }
@@ -628,7 +688,6 @@
     return String(raw || '').replace(/[^A-Za-z0-9]/g, '').slice(0, CODE_LEN);
   }
 
-  /* ==== YouTube URL helpers ==== */
   function extractVideoId(input) {
     const s = String(input || '').trim();
     if (!s) return null;
@@ -652,21 +711,10 @@
   }
   const ytThumb = id => `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
 
-  /* ==== YouTube API globals ==== */
   let ytApiReady = false;
-  let hostYtPlayer = null;
-  let hostYtReady = false;
-  let hostYtVideoId = null;
-  let hostPendingVideo = null;
-  let hostLastSentAt = 0;
-  let hostLastState = -1;
-  let hostLastTime = 0;
-  let hostLastCheck = 0;
-
-  let viewerYtPlayer = null;
-  let viewerYtReady = false;
-  let viewerYtVideoId = null;
-  let viewerPendingSync = null;
+  let hostYtPlayer = null, hostYtReady = false, hostYtVideoId = null;
+  let hostPendingVideo = null, hostLastSentAt = 0, hostLastState = -1, hostLastTime = 0, hostLastCheck = 0;
+  let viewerYtPlayer = null, viewerYtReady = false, viewerYtVideoId = null, viewerPendingSync = null;
 
   window.onYouTubeIframeAPIReady = () => {
     ytApiReady = true;
@@ -765,9 +813,7 @@
     _loop() {
       if (!this._running) return;
       const now = performance.now();
-      if (now - this._last >= 1000 / TARGET_FPS) {
-        this._last = now; this._draw(); this._phase += 0.08;
-      }
+      if (now - this._last >= 1000 / TARGET_FPS) { this._last = now; this._draw(); this._phase += 0.08; }
       this._raf = requestAnimationFrame(() => this._loop());
     }
     _draw() {
@@ -898,14 +944,23 @@
   const listenPrompt = $('#listenPrompt');
   const todayNameEl  = $('#todayName');
   const todayCodeEl  = $('#todayCode');
-  const lessonsPanel = $('#lessonsPanel');
   const lessonsVideoWrap = $('#lessonsVideoWrap');
-  const lessonsEmpty = $('#lessonsEmpty');
   const lessonsUrlInput = $('#lessonsUrlInput');
   const lessonsAddBtn = $('#lessonsAddBtn');
+  const lessonsBrowseBtn = $('#lessonsBrowseBtn');
   const lessonsList   = $('#lessonsList');
   const ytSlotHost    = $('#ytSlotHost');
   const ytSlotViewer  = $('#ytSlotViewer');
+
+  /* Browse modal elements */
+  const browseModal     = $('#browseModal');
+  const browseTabs      = document.querySelectorAll('.browse-tab');
+  const browseSearchRow = $('#browseSearchRow');
+  const browseSearchInput = $('#browseSearchInput');
+  const browseSearchBtn = $('#browseSearchBtn');
+  const browseList      = $('#browseList');
+  let browseTab = 'channel';
+  let browseChannelLoaded = false;
 
   /* ================= STATE ================= */
   const state = {
@@ -920,9 +975,7 @@
     torchSupported: false, torch: false, screenLight: false, filtersOpen: false,
     isGuest: false, myGuestMode: null, myGuestName: '',
     pendingWaveMode: 'camera', recording: null, facingMode: 'user',
-    lessonsMode: false,
-    lessons: [],
-    activeLessonId: null
+    lessonsMode: false, lessons: [], activeLessonId: null
   };
   let boardTimer = null;
 
@@ -952,7 +1005,6 @@
     soundBtn.textContent = state.soundOn ? '🔊' : '🔇';
     listenPrompt.classList.toggle('show', state.role === 'viewer' && !state.soundOn);
   }
-
   function currentLessonTitle() {
     const item = state.lessons.find(x => x.id === state.activeLessonId);
     return item ? item.title : 'Video lesson';
@@ -969,92 +1021,55 @@
     }
     hostYtVideoId = videoId;
     hostYtPlayer = new YT.Player('ytPlayerHost', {
-      videoId,
-      width: '100%',
-      height: '100%',
-      playerVars: {
-        autoplay: 1, controls: 1, modestbranding: 1, rel: 0,
-        playsinline: 1, enablejsapi: 1, origin: location.origin
-      },
+      videoId, width: '100%', height: '100%',
+      playerVars: { autoplay:1, controls:1, modestbranding:1, rel:0, playsinline:1,
+        enablejsapi:1, origin: location.origin },
       events: {
-        onReady: () => {
-          hostYtReady = true;
-          lessonsVideoWrap.classList.add('has-video');
-          hostBroadcastSync();
-        },
+        onReady: () => { hostYtReady = true; lessonsVideoWrap.classList.add('has-video'); hostBroadcastSync(); },
         onStateChange: () => { hostBroadcastSync(); }
       }
     });
   }
-
   function hostBroadcastSync() {
     if (state.role !== 'host') return;
     if (!hostYtPlayer || !hostYtReady) {
-      broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId: null });
-      return;
+      broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId: null }); return;
     }
-    let videoId = hostYtVideoId;
-    try {
-      const data = hostYtPlayer.getVideoData && hostYtPlayer.getVideoData();
-      if (data && data.video_id) videoId = data.video_id;
-    } catch (e) {}
-    let time = 0, playing = false;
+    let videoId = hostYtVideoId, time = 0, playing = false;
+    try { const d = hostYtPlayer.getVideoData && hostYtPlayer.getVideoData(); if (d && d.video_id) videoId = d.video_id; } catch (e) {}
     try { time = hostYtPlayer.getCurrentTime() || 0; } catch (e) {}
     try { playing = hostYtPlayer.getPlayerState() === 1; } catch (e) {}
     broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId, time, playing });
     hostLastSentAt = Date.now();
   }
-
-  // Host polling loop — detects state changes, seeks, and periodic refresh
   setInterval(() => {
     if (state.role !== 'host' || !state.lessonsMode) return;
     if (!hostYtPlayer || !hostYtReady) return;
     let curState = -1, curTime = 0;
     try { curState = hostYtPlayer.getPlayerState(); curTime = hostYtPlayer.getCurrentTime(); } catch (e) { return; }
     const now = Date.now();
-
     let seekDetected = false;
     if (hostLastCheck > 0) {
       const elapsed = (now - hostLastCheck) / 1000;
       const expected = curState === 1 ? elapsed : 0;
-      const actual = curTime - hostLastTime;
-      if (Math.abs(actual - expected) > 1.5) seekDetected = true;
+      if (Math.abs((curTime - hostLastTime) - expected) > 1.5) seekDetected = true;
     }
-    const stateChanged = curState !== hostLastState;
-    const periodic = now - hostLastSentAt > SYNC_PERIODIC;
-
-    if (stateChanged || seekDetected || periodic) {
-      hostBroadcastSync();
-    }
-    hostLastState = curState;
-    hostLastTime = curTime;
-    hostLastCheck = now;
+    if (curState !== hostLastState || seekDetected || now - hostLastSentAt > SYNC_PERIODIC) hostBroadcastSync();
+    hostLastState = curState; hostLastTime = curTime; hostLastCheck = now;
   }, SYNC_INTERVAL);
 
   function hostDestroyPlayer() {
-    if (hostYtPlayer) {
-      try { hostYtPlayer.destroy(); } catch (e) {}
-    }
-    hostYtPlayer = null;
-    hostYtReady = false;
-    hostYtVideoId = null;
-    hostPendingVideo = null;
-    hostLastState = -1;
-    hostLastTime = 0;
-    hostLastCheck = 0;
+    try { hostYtPlayer && hostYtPlayer.destroy(); } catch (e) {}
+    hostYtPlayer = null; hostYtReady = false; hostYtVideoId = null;
+    hostPendingVideo = null; hostLastState = -1; hostLastTime = 0; hostLastCheck = 0;
     lessonsVideoWrap.classList.remove('has-video');
-    // Rebuild the div (destroy removes the iframe and the inner div)
-    const newDiv = document.createElement('div');
-    newDiv.id = 'ytPlayerHost';
-    ytSlotHost.innerHTML = '';
-    ytSlotHost.appendChild(newDiv);
+    ytSlotHost.innerHTML = ''; const d = document.createElement('div'); d.id = 'ytPlayerHost'; ytSlotHost.appendChild(d);
   }
 
   /* ================= YOUTUBE — VIEWER ================= */
   function viewerEnsurePlayer(sync) {
     if (!ytApiReady) { viewerPendingSync = sync; return; }
     if (viewerYtPlayer && viewerYtReady) {
-      // load different video
       if (sync.videoId && viewerYtVideoId !== sync.videoId) {
         viewerYtVideoId = sync.videoId;
         try { viewerYtPlayer.loadVideoById(sync.videoId, sync.time || 0); } catch (e) {}
@@ -1064,129 +1079,80 @@
     }
     viewerYtVideoId = sync.videoId;
     viewerYtPlayer = new YT.Player('ytPlayerViewer', {
-      videoId: sync.videoId,
-      width: '100%',
-      height: '100%',
-      playerVars: {
-        autoplay: sync.playing ? 1 : 0,
-        controls: 0, modestbranding: 1, rel: 0, playsinline: 1,
-        mute: 1, disablekb: 1, fs: 0, iv_load_policy: 3,
-        enablejsapi: 1, origin: location.origin
-      },
+      videoId: sync.videoId, width:'100%', height:'100%',
+      playerVars: { autoplay: sync.playing ? 1 : 0, controls: 0, modestbranding:1, rel:0,
+        playsinline:1, mute:1, disablekb:1, fs:0, iv_load_policy:3, enablejsapi:1, origin: location.origin },
       events: {
         onReady: (e) => {
-          viewerYtReady = true;
-          lessonsVideoWrap.classList.add('has-video');
+          viewerYtReady = true; lessonsVideoWrap.classList.add('has-video');
           if (sync.time > 0) { try { e.target.seekTo(sync.time, true); } catch (er) {} }
           if (sync.playing) {
             try { e.target.playVideo(); } catch (er) {}
-            // Try to unmute if sound is on (user has interacted with page already)
-            if (state.soundOn) {
-              setTimeout(() => {
-                if (viewerYtPlayer && viewerYtReady) {
-                  try { viewerYtPlayer.unMute(); } catch (er) {}
-                }
-              }, 300);
-            }
-          } else {
-            try { e.target.pauseVideo(); } catch (er) {}
-          }
+            if (state.soundOn) setTimeout(() => { try { viewerYtPlayer.unMute(); } catch (er) {} }, 300);
+          } else { try { e.target.pauseVideo(); } catch (er) {} }
         }
       }
     });
   }
-
   function viewerApplySync(data) {
-    if (!data || data.on !== true) return;
-    if (!data.videoId) return;      // panel shown but no video yet
-
-    if (!viewerYtPlayer || !viewerYtReady) {
-      viewerEnsurePlayer(data);
-      return;
-    }
-
-    // Different video → load
+    if (!data || data.on !== true || !data.videoId) return;
+    if (!viewerYtPlayer || !viewerYtReady) { viewerEnsurePlayer(data); return; }
     if (data.videoId !== viewerYtVideoId) {
       viewerYtVideoId = data.videoId;
       try { viewerYtPlayer.loadVideoById(data.videoId, data.time || 0); } catch (e) {}
       if (!data.playing) setTimeout(() => { try { viewerYtPlayer.pauseVideo(); } catch (e) {} }, 300);
       return;
     }
-
-    // Same video → correct drift / play state
     let curTime = 0, curState = -1;
     try { curTime = viewerYtPlayer.getCurrentTime() || 0; } catch (e) {}
     try { curState = viewerYtPlayer.getPlayerState(); } catch (e) {}
-
     if (data.playing) {
       if (curState !== 1) { try { viewerYtPlayer.playVideo(); } catch (e) {} }
-      if (Math.abs(curTime - data.time) > DRIFT_THRESH) {
-        try { viewerYtPlayer.seekTo(data.time, true); } catch (e) {}
-      }
+      if (Math.abs(curTime - data.time) > DRIFT_THRESH) { try { viewerYtPlayer.seekTo(data.time, true); } catch (e) {} }
     } else {
       if (curState === 1) { try { viewerYtPlayer.pauseVideo(); } catch (e) {} }
-      if (Math.abs(curTime - data.time) > 1.0) {
-        try { viewerYtPlayer.seekTo(data.time, true); } catch (e) {}
-      }
+      if (Math.abs(curTime - data.time) > 1.0) { try { viewerYtPlayer.seekTo(data.time, true); } catch (e) {} }
     }
   }
-
   function viewerDestroyPlayer() {
-    if (viewerYtPlayer) {
-      try { viewerYtPlayer.destroy(); } catch (e) {}
-    }
-    viewerYtPlayer = null;
-    viewerYtReady = false;
-    viewerYtVideoId = null;
-    viewerPendingSync = null;
+    try { viewerYtPlayer && viewerYtPlayer.destroy(); } catch (e) {}
+    viewerYtPlayer = null; viewerYtReady = false; viewerYtVideoId = null; viewerPendingSync = null;
     lessonsVideoWrap.classList.remove('has-video');
-    const newDiv = document.createElement('div');
-    newDiv.id = 'ytPlayerViewer';
-    ytSlotViewer.innerHTML = '';
-    ytSlotViewer.appendChild(newDiv);
+    ytSlotViewer.innerHTML = ''; const d = document.createElement('div'); d.id = 'ytPlayerViewer'; ytSlotViewer.appendChild(d);
   }
 
-  /* ================= LESSONS UI ================= */
+  /* ================= LESSONS ================= */
   function loadLessons() {
     try {
-      const raw = localStorage.getItem(LESSONS_KEY);
-      if (!raw) return [];
-      const arr = JSON.parse(raw);
-      if (!Array.isArray(arr)) return [];
-      return arr
-        .filter(o => o && typeof o.id === 'string' && /^[A-Za-z0-9_-]{11}$/.test(o.id))
+      const raw = localStorage.getItem(LESSONS_KEY); if (!raw) return [];
+      const arr = JSON.parse(raw); if (!Array.isArray(arr)) return [];
+      return arr.filter(o => o && typeof o.id === 'string' && /^[A-Za-z0-9_-]{11}$/.test(o.id))
         .map(o => ({ id: o.id, title: String(o.title || ('Video ' + o.id.slice(0,6))) }));
     } catch (e) { return []; }
   }
-  function saveLessons() {
-    try { localStorage.setItem(LESSONS_KEY, JSON.stringify(state.lessons)); } catch (e) {}
-  }
+  function saveLessons() { try { localStorage.setItem(LESSONS_KEY, JSON.stringify(state.lessons)); } catch (e) {} }
   function renderLessonsList() {
     lessonsList.innerHTML = '';
     if (!state.lessons.length) {
       const note = document.createElement('div');
       note.className = 'lessons-empty-note';
-      note.textContent = 'No lessons yet — paste a video URL above to add one.';
-      lessonsList.appendChild(note);
-      return;
+      note.textContent = 'No lessons yet — tap 🔎 to browse or paste a URL above.';
+      lessonsList.appendChild(note); return;
     }
     state.lessons.forEach(item => {
       const card = document.createElement('div');
       card.className = 'lesson-card' + (item.id === state.activeLessonId ? ' active' : '');
       const thumb = document.createElement('div');
-      thumb.className = 'thumb';
-      thumb.style.backgroundImage = `url("${ytThumb(item.id)}")`;
+      thumb.className = 'thumb'; thumb.style.backgroundImage = `url("${ytThumb(item.id)}")`;
       const title = document.createElement('div');
-      title.className = 'title';
-      title.textContent = item.title;
+      title.className = 'title'; title.textContent = item.title;
       const rm = document.createElement('button');
       rm.className = 'remove'; rm.textContent = '×'; rm.title = 'Remove';
       rm.addEventListener('click', e => {
         e.stopPropagation();
         state.lessons = state.lessons.filter(x => x.id !== item.id);
         if (state.activeLessonId === item.id) {
-          state.activeLessonId = null;
-          lessonsVideoWrap.classList.remove('has-video');
+          state.activeLessonId = null; lessonsVideoWrap.classList.remove('has-video');
           if (hostYtPlayer && hostYtReady) { try { hostYtPlayer.stopVideo(); } catch (er) {} }
         }
         saveLessons(); renderLessonsList();
@@ -1196,16 +1162,11 @@
       lessonsList.appendChild(card);
     });
   }
-
   function playLesson(id) {
     if (!id) return;
-    state.activeLessonId = id;
-    hostEnsurePlayer(id);
-    renderLessonsList();
-    // Immediate broadcast so viewers switch right away
+    state.activeLessonId = id; hostEnsurePlayer(id); renderLessonsList();
     setTimeout(hostBroadcastSync, 100);
   }
-
   function addLessonFromUrl(raw) {
     const id = extractVideoId(raw);
     if (!id) {
@@ -1219,51 +1180,38 @@
       state.lessons.unshift({ id, title: 'Video ' + id.slice(0, 6) });
       saveLessons();
       fetch('https://noembed.com/embed?url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + id))
-        .then(r => r.json())
-        .then(d => {
+        .then(r => r.json()).then(d => {
           if (d && d.title) {
             const item = state.lessons.find(x => x.id === id);
             if (item) { item.title = String(d.title).slice(0, 60); saveLessons(); renderLessonsList(); }
           }
-        })
-        .catch(() => {});
+        }).catch(() => {});
     }
     playLesson(id);
     if (lessonsUrlInput) lessonsUrlInput.value = '';
     return true;
   }
-
   function enterLessonsMode() {
     state.lessonsMode = true;
     boardEl.classList.add('lessons-mode');
-    boardLabelText.textContent = '📺 Video lessons · @misterjerryht';
-    lessonsBtn.classList.add('on');
-    lessonsBtn.textContent = '📝 Board';
+    boardLabelText.textContent = '📺 Video lessons · ' + CHANNEL_HANDLE;
+    lessonsBtn.classList.add('on'); lessonsBtn.textContent = '📝 Board';
     renderLessonsList();
     if (state.activeLessonId) playLesson(state.activeLessonId);
-    // Tell viewers
     hostBroadcastSync();
-    if (state.activeLessonId === null) {
-      broadcast({ type:'lesson-sync', on: true, videoId: null });
-    }
+    if (!state.activeLessonId) broadcast({ type:'lesson-sync', on: true, videoId: null });
     setTimeout(() => lessonsUrlInput.focus(), 100);
   }
   function exitLessonsMode() {
     state.lessonsMode = false;
     boardEl.classList.remove('lessons-mode');
     boardLabelText.textContent = 'On‑air board';
-    lessonsBtn.classList.remove('on');
-    lessonsBtn.textContent = '📺 Lessons';
-    // Pause host video
+    lessonsBtn.classList.remove('on'); lessonsBtn.textContent = '📺 Lessons';
     if (hostYtPlayer && hostYtReady) { try { hostYtPlayer.pauseVideo(); } catch (e) {} }
-    // Tell viewers
     broadcast({ type:'lesson-sync', on: false, videoId: null });
     setTimeout(() => boardInput.focus(), 100);
   }
-  function toggleLessonsMode() {
-    if (state.lessonsMode) exitLessonsMode();
-    else enterLessonsMode();
-  }
+  function toggleLessonsMode() { if (state.lessonsMode) exitLessonsMode(); else enterLessonsMode(); }
   lessonsBtn.addEventListener('click', toggleLessonsMode);
   lessonsAddBtn.addEventListener('click', () => addLessonFromUrl(lessonsUrlInput.value));
   lessonsUrlInput.addEventListener('keydown', e => {
@@ -1276,11 +1224,9 @@
     }, 30);
   });
 
-  /* ================= VIEWER — LESSON HANDLER ================= */
   function viewerHandleLessonSync(data) {
     if (!data) return;
     if (data.on !== true) {
-      // Hide lessons mode
       if (state.lessonsMode) {
         state.lessonsMode = false;
         boardEl.classList.remove('lessons-mode');
@@ -1289,22 +1235,162 @@
       }
       return;
     }
-
-    // Enable lessons mode on viewer
     if (!state.lessonsMode) {
       state.lessonsMode = true;
       boardEl.classList.add('lessons-mode');
-      boardLabelText.textContent = '📺 Video lessons · @misterjerryht';
+      boardLabelText.textContent = '📺 Video lessons · ' + CHANNEL_HANDLE;
     }
-
     if (!data.videoId) return;
-
-    if (!viewerYtPlayer || !viewerYtReady) {
-      viewerEnsurePlayer(data);
-      return;
-    }
+    if (!viewerYtPlayer || !viewerYtReady) { viewerEnsurePlayer(data); return; }
     viewerApplySync(data);
   }
+
+  /* ================= BROWSE YOUTUBE ================= */
+  function fetchWithTimeout(url, ms) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(t));
+  }
+  async function fetchProxy(url) {
+    const proxies = [
+      u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+      u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+      u => 'https://corsproxy.io/?' + encodeURIComponent(u)
+    ];
+    for (const p of proxies) {
+      try {
+        const res = await fetchWithTimeout(p(url), 12000);
+        if (res.ok) {
+          const text = await res.text();
+          if (text && text.length > 2000 && text.indexOf('ytInitialData') !== -1) return text;
+        }
+      } catch (e) {}
+    }
+    return null;
+  }
+  function extractYtData(html) {
+    const idx = html.indexOf('ytInitialData'); if (idx < 0) return null;
+    const braceStart = html.indexOf('{', idx); if (braceStart < 0) return null;
+    let depth = 0, inString = false, escape = false, end = -1;
+    for (let i = braceStart; i < html.length; i++) {
+      const c = html[i];
+      if (inString) {
+        if (escape) { escape = false; continue; }
+        if (c === '\\') { escape = true; continue; }
+        if (c === '"') inString = false;
+        continue;
+      }
+      if (c === '"') { inString = true; continue; }
+      if (c === '{') depth++;
+      else if (c === '}') { depth--; if (depth === 0) { end = i + 1; break; } }
+    }
+    if (end < 0) return null;
+    try { return JSON.parse(html.slice(braceStart, end)); } catch (e) { return null; }
+  }
+  function extractVideosFromData(data) {
+    const out = []; const seen = new Set();
+    function walk(node) {
+      if (!node || typeof node !== 'object') return;
+      if (Array.isArray(node)) { for (const x of node) walk(x); return; }
+      const vr = node.videoRenderer || node.gridVideoRenderer;
+      if (vr && vr.videoId) {
+        const id = vr.videoId; let title = '';
+        if (vr.title) {
+          if (vr.title.runs && vr.title.runs[0]) title = vr.title.runs[0].text;
+          else if (vr.title.simpleText) title = vr.title.simpleText;
+        }
+        if (id && title && !seen.has(id)) { seen.add(id); out.push({ id, title }); }
+      }
+      for (const k in node) {
+        if (k === 'videoRenderer' || k === 'gridVideoRenderer') continue;
+        walk(node[k]);
+      }
+    }
+    walk(data); return out;
+  }
+  function showBrowseLoading() {
+    browseList.innerHTML = '<div class="browse-loading"><div class="spinner" style="width:20px;height:20px;margin:0 auto 12px;border-width:3px"></div>Loading videos…</div>';
+  }
+  function showBrowseError(msg) {
+    browseList.innerHTML = '<div class="browse-error">' + esc(msg) + '</div>';
+  }
+  function renderBrowseResults(videos) {
+    if (!videos.length) { showBrowseError('No videos found.'); return; }
+    browseList.innerHTML = '';
+    videos.forEach(v => {
+      const card = document.createElement('div');
+      card.className = 'browse-video';
+      card.innerHTML =
+        '<div class="bv-thumb" style="background-image:url(\'' + ytThumb(v.id) + '\')"></div>' +
+        '<div class="bv-title">' + esc(v.title) + '</div>';
+      card.addEventListener('click', () => {
+        addLessonFromUrl(v.id);
+        closeBrowse();
+      });
+      browseList.appendChild(card);
+    });
+  }
+  async function loadChannelVideos(force) {
+    if (!force && browseChannelLoaded) return;
+    showBrowseLoading();
+    const url = 'https://www.youtube.com/' + CHANNEL_HANDLE + '/videos';
+    const html = await fetchProxy(url);
+    if (!html) { showBrowseError('Could not load the channel. Try again, or tap "Open YouTube".'); return; }
+    const data = extractYtData(html);
+    if (!data) { showBrowseError('YouTube returned an unexpected page. Try again.'); return; }
+    const videos = extractVideosFromData(data);
+    if (!videos.length) { showBrowseError('No videos found on the channel.'); return; }
+    browseChannelLoaded = true;
+    renderBrowseResults(videos);
+  }
+  async function searchVideos(q) {
+    showBrowseLoading();
+    const url = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+    const html = await fetchProxy(url);
+    if (!html) { showBrowseError('Could not search YouTube. Try again, or tap "Open YouTube".'); return; }
+    const data = extractYtData(html);
+    if (!data) { showBrowseError('YouTube returned an unexpected page. Try again.'); return; }
+    const videos = extractVideosFromData(data);
+    if (!videos.length) { showBrowseError('No videos found for "' + q + '".'); return; }
+    renderBrowseResults(videos);
+  }
+
+  function openBrowse() {
+    browseModal.classList.add('open');
+    if (browseTab === 'channel') loadChannelVideos(false);
+    else if (browseSearchInput.value.trim() && !browseList.querySelector('.browse-video')) {
+      searchVideos(browseSearchInput.value.trim());
+    }
+  }
+  function closeBrowse() { browseModal.classList.remove('open'); }
+
+  lessonsBrowseBtn.addEventListener('click', openBrowse);
+  $('#browseClose').addEventListener('click', closeBrowse);
+  $('#browseReload').addEventListener('click', () => {
+    if (browseTab === 'channel') loadChannelVideos(true);
+    else if (browseSearchInput.value.trim()) searchVideos(browseSearchInput.value.trim());
+  });
+  browseTabs.forEach(t => {
+    t.addEventListener('click', () => {
+      browseTabs.forEach(x => x.classList.toggle('active', x === t));
+      browseTab = t.dataset.tab;
+      browseSearchRow.classList.toggle('show', browseTab === 'search');
+      if (browseTab === 'channel') loadChannelVideos(false);
+      else if (browseTab === 'search' && !browseList.querySelector('.browse-video')) {
+        browseList.innerHTML = '<div class="browse-loading">Type a query and press Go.</div>';
+        setTimeout(() => browseSearchInput.focus(), 50);
+      }
+    });
+  });
+  browseSearchBtn.addEventListener('click', () => {
+    const q = browseSearchInput.value.trim(); if (q) searchVideos(q);
+  });
+  browseSearchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const q = browseSearchInput.value.trim(); if (q) searchVideos(q);
+    }
+  });
+  browseModal.addEventListener('click', e => { if (e.target === browseModal) closeBrowse(); });
 
   /* ================= BOARD STYLE ================= */
   function applyBoardStyle() {
@@ -1333,11 +1419,9 @@
       chip.type = 'button';
       chip.className = 'chip' + (f.id === state.filterId ? ' active' : '');
       chip.dataset.id = f.id;
-      const sw = document.createElement('span');
-      sw.className = 'sw';
+      const sw = document.createElement('span'); sw.className = 'sw';
       sw.style.filter = f.css === 'none' ? 'none' : f.css;
-      const label = document.createElement('span');
-      label.textContent = f.label;
+      const label = document.createElement('span'); label.textContent = f.label;
       chip.appendChild(sw); chip.appendChild(label);
       chip.addEventListener('click', () => selectFilter(f.id));
       filtersScroll.appendChild(chip);
@@ -1379,14 +1463,11 @@
   }
   async function toggleFlash() {
     const stream = state.role === 'host' ? state.localStream : state.guestStream;
-    const track = stream && stream.getVideoTracks()[0];
-    if (!track) return;
+    const track = stream && stream.getVideoTracks()[0]; if (!track) return;
     if (state.torchSupported) {
       const next = !state.torch;
-      try {
-        await track.applyConstraints({ advanced: [{ torch: next }] });
-        state.torch = next; updateFlashButton(); return;
-      } catch (e) { state.torchSupported = false; }
+      try { await track.applyConstraints({ advanced: [{ torch: next }] }); state.torch = next; updateFlashButton(); return; }
+      catch (e) { state.torchSupported = false; }
     }
     toggleScreenLight();
   }
@@ -1406,29 +1487,23 @@
     const stream = isHost ? state.localStream : state.guestStream;
     const pipeline = isHost ? state.pipeline : state.guestPipeline;
     if (!stream || !pipeline) return;
-    const oldTrack = stream.getVideoTracks()[0];
-    if (!oldTrack) return;
+    const oldTrack = stream.getVideoTracks()[0]; if (!oldTrack) return;
     const newFacing = state.facingMode === 'user' ? 'environment' : 'user';
     let fresh;
     try {
       fresh = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: newFacing, width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 }, frameRate: { ideal: 30, max: 30 } },
-        audio: false
+        video: { facingMode: newFacing, width:{ideal:1280,max:1920}, height:{ideal:720,max:1080}, frameRate:{ideal:30,max:30} }, audio: false
       });
     } catch (e) { addMessage('Could not switch camera: ' + (e.message || e.name), 'system'); return; }
-    const newTrack = fresh.getVideoTracks()[0];
-    newTrack.enabled = oldTrack.enabled;
+    const newTrack = fresh.getVideoTracks()[0]; newTrack.enabled = oldTrack.enabled;
     const audioTracks = stream.getAudioTracks();
     const rebuilt = new MediaStream([newTrack, ...audioTracks]);
     oldTrack.stop();
     if (isHost) state.localStream = rebuilt; else state.guestStream = rebuilt;
     state.facingMode = newFacing;
     await pipeline.attach(rebuilt);
-    if (isHost) {
-      hostVideo.classList.toggle('mirrored', newFacing === 'user');
-      updateTorchSupport(newTrack);
-    } else {
+    if (isHost) { hostVideo.classList.toggle('mirrored', newFacing === 'user'); updateTorchSupport(newTrack); }
+    else {
       const selfVideo = tilesStrip.querySelector(`.tile[data-self="1"] video`);
       if (selfVideo) selfVideo.classList.toggle('mirrored', newFacing === 'user');
       updateTorchSupport(newTrack);
@@ -1450,17 +1525,11 @@
 
   /* ================= CHAT ================= */
   function addMessage(text, who, ts) {
-    const wrap = document.createElement('div');
-    wrap.className = 'msg ' + who;
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble';
-    bubble.textContent = text;
+    const wrap = document.createElement('div'); wrap.className = 'msg ' + who;
+    const bubble = document.createElement('div'); bubble.className = 'bubble'; bubble.textContent = text;
     wrap.appendChild(bubble);
     if (who !== 'system') {
-      const t = document.createElement('div');
-      t.className = 'time';
-      t.textContent = timeString(ts);
-      wrap.appendChild(t);
+      const t = document.createElement('div'); t.className = 'time'; t.textContent = timeString(ts); wrap.appendChild(t);
     }
     const nearBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 90;
     messagesEl.appendChild(wrap);
@@ -1479,13 +1548,8 @@
 
   /* ================= SOUND ================= */
   function toggleSound() {
-    state.soundOn = !state.soundOn;
-    updateSoundButton();
-    if (state.audioBus) {
-      state.audioBus.setMuted(!state.soundOn);
-      if (state.soundOn) state.audioBus.resume();
-    }
-    // Also toggle YouTube player mute on viewer side
+    state.soundOn = !state.soundOn; updateSoundButton();
+    if (state.audioBus) { state.audioBus.setMuted(!state.soundOn); if (state.soundOn) state.audioBus.resume(); }
     if (state.role === 'viewer' && viewerYtPlayer && viewerYtReady) {
       try { if (state.soundOn) viewerYtPlayer.unMute(); else viewerYtPlayer.mute(); } catch (e) {}
     }
@@ -1511,7 +1575,7 @@
     } else if (data.type === 'board-style') {
       if (state.role === 'viewer') {
         state.boardTextColor = data.textColor || DEFAULT_TEXT_COLOR;
-        state.boardBgColor   = data.bgColor   || DEFAULT_BG_COLOR;
+        state.boardBgColor = data.bgColor || DEFAULT_BG_COLOR;
         applyBoardStyle();
       }
     } else if (data.type === 'lesson-sync') {
@@ -1591,21 +1655,16 @@
     const rm = tile.querySelector('.tile-remove');
     if (state.role === 'host') rm.addEventListener('click', e => { e.stopPropagation(); removeGuest(id, true); });
     else rm.remove();
-    tilesStrip.appendChild(tile);
-    return tile;
+    tilesStrip.appendChild(tile); return tile;
   }
   function removeGuestTile(id) {
-    const tile = tilesStrip.querySelector(`.tile[data-guestid="${CSS.escape(id)}"]`);
-    if (!tile) return;
-    const v = tile.querySelector('video');
-    if (v) { try { v.srcObject = null; } catch (e) {} }
+    const tile = tilesStrip.querySelector(`.tile[data-guestid="${CSS.escape(id)}"]`); if (!tile) return;
+    const v = tile.querySelector('video'); if (v) { try { v.srcObject = null; } catch (e) {} }
     tile.remove();
   }
   function attachToTile(id, stream) {
-    const tile = tilesStrip.querySelector(`.tile[data-guestid="${CSS.escape(id)}"]`);
-    if (!tile) return;
-    const v = tile.querySelector('video');
-    if (!v) return;
+    const tile = tilesStrip.querySelector(`.tile[data-guestid="${CSS.escape(id)}"]`); if (!tile) return;
+    const v = tile.querySelector('video'); if (!v) return;
     v.srcObject = stream; v.muted = true;
     v.play().catch(() => {});
     if (tile.dataset.self === '1' && state.facingMode === 'user') v.classList.add('mirrored');
@@ -1615,8 +1674,7 @@
   function renderRequests() {
     requestsEl.innerHTML = '';
     state.requests.forEach(req => {
-      const el = document.createElement('div');
-      el.className = 'request';
+      const el = document.createElement('div'); el.className = 'request';
       el.innerHTML = `
         <div class="req-info">
           <span class="req-name">${esc(req.name)}</span>
@@ -1632,8 +1690,7 @@
     });
   }
   function approveGuest(peerId) {
-    const req = state.requests.get(peerId);
-    if (!req) return;
+    const req = state.requests.get(peerId); if (!req) return;
     if (state.guests.size >= MAX_GUESTS) { alert('Stage is full — 8 guests max.'); return; }
     state.requests.delete(peerId); renderRequests();
     const conn = state.conns.find(c => c.peer === peerId);
@@ -1669,14 +1726,11 @@
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       landingError.textContent = 'Camera access requires HTTPS or localhost.'; return;
     }
-    state.audioBus = new AudioBus();
-    state.audioBus.init();
-    state.audioBus.resume();
+    state.audioBus = new AudioBus(); state.audioBus.init(); state.audioBus.resume();
 
     let raw;
-    try {
-      raw = await navigator.mediaDevices.getUserMedia(CAM_CONSTRAINTS('user'));
-    } catch (err) {
+    try { raw = await navigator.mediaDevices.getUserMedia(CAM_CONSTRAINTS('user')); }
+    catch (err) {
       landingError.textContent = err && err.name === 'NotAllowedError'
         ? 'Camera/microphone permission was denied.'
         : 'No camera or microphone was found on this device.';
@@ -1685,19 +1739,14 @@
 
     state.role = 'host';
     state.code = todayCode();
-    state.boardText = '';
-    state.boardTextColor = DEFAULT_TEXT_COLOR;
-    state.boardBgColor = DEFAULT_BG_COLOR;
+    state.boardText = ''; state.boardTextColor = DEFAULT_TEXT_COLOR; state.boardBgColor = DEFAULT_BG_COLOR;
     state.filterId = 'natural'; state.filterCss = 'none'; state.filterBeauty = 0;
     state.facingMode = 'user'; state.soundOn = true;
     state.guests.clear(); state.guestRelays = []; state.requests.clear();
     state.torch = false; state.screenLight = false; state.filtersOpen = false;
-    state.lessonsMode = false;
-    state.lessons = loadLessons();
-    state.activeLessonId = null;
+    state.lessonsMode = false; state.lessons = loadLessons(); state.activeLessonId = null;
 
-    stage.classList.add('role-host');
-    stage.classList.remove('role-viewer');
+    stage.classList.add('role-host'); stage.classList.remove('role-viewer');
     boardEl.classList.remove('viewer-mode');
 
     state.localStream = raw;
@@ -1708,53 +1757,34 @@
       ...raw.getAudioTracks()
     ]);
 
-    hostVideo.srcObject = state.outStream;
-    hostVideo.muted = true;
-    hostVideo.classList.add('mirrored');
-    hostVideo.play().catch(() => {});
+    hostVideo.srcObject = state.outStream; hostVideo.muted = true;
+    hostVideo.classList.add('mirrored'); hostVideo.play().catch(() => {});
     updateTorchSupport(raw.getVideoTracks()[0]);
 
     enterRoom();
-    codeText.textContent = state.code;
-    dayPill.style.display = '';
-    dayText.textContent = todayName();
-    setupShare(state.code);
+    codeText.textContent = state.code; dayPill.style.display = '';
+    dayText.textContent = todayName(); setupShare(state.code);
 
     boardColors.classList.add('show');
-    boardInput.style.display = '';
-    boardView.style.display = 'none';
+    boardInput.style.display = ''; boardView.style.display = 'none';
     boardInput.value = ''; boardView.textContent = '';
     applyBoardStyle();
     boardLabelText.textContent = 'On‑air board';
     boardEl.classList.remove('lessons-mode');
 
-    micBtn.style.display = '';
-    camBtn.style.display = '';
-    flipBtn.style.display = '';
-    flashBtn.style.display = '';
-    filtersBtn.style.display = '';
-    lessonsBtn.style.display = '';
-    lessonsBtn.classList.remove('on');
-    lessonsBtn.textContent = '📺 Lessons';
-    recBtn.style.display = '';
-    waveBtn.style.display = 'none';
-    guestRadioBtn.style.display = 'none';
-    viewRadioBtn.style.display = 'none';
-    soundBtn.style.display = '';
-    listenPrompt.classList.remove('show');
-    updateSoundButton();
-    updateFlashButton();
+    micBtn.style.display = ''; camBtn.style.display = ''; flipBtn.style.display = '';
+    flashBtn.style.display = ''; filtersBtn.style.display = '';
+    lessonsBtn.style.display = ''; lessonsBtn.classList.remove('on'); lessonsBtn.textContent = '📺 Lessons';
+    recBtn.style.display = ''; waveBtn.style.display = 'none';
+    guestRadioBtn.style.display = 'none'; viewRadioBtn.style.display = 'none';
+    soundBtn.style.display = ''; listenPrompt.classList.remove('show');
+    updateSoundButton(); updateFlashButton();
 
-    filtersBar.classList.remove('open');
-    stage.classList.remove('filters-open');
-    buildFilterChips();
-    selectFilter('natural');
+    filtersBar.classList.remove('open'); stage.classList.remove('filters-open');
+    buildFilterChips(); selectFilter('natural');
 
-    endBtn.textContent = 'End';
-    setStatus('Connecting…', false);
-    hideWaiting();
-    setViewerCount(0);
-    recIndicator.classList.remove('active');
+    endBtn.textContent = 'End'; setStatus('Connecting…', false);
+    hideWaiting(); setViewerCount(0); recIndicator.classList.remove('active');
     requestsEl.innerHTML = '';
 
     setTimeout(() => boardInput.focus(), 300);
@@ -1763,8 +1793,7 @@
 
   function onIncomingConnection(conn) {
     if (state.role !== 'host') { try { conn.close(); } catch (e) {} return; }
-    state.conns.push(conn);
-    wireConnection(conn);
+    state.conns.push(conn); wireConnection(conn);
 
     const startHostCall = () => {
       if (!state.outStream) return;
@@ -1773,8 +1802,7 @@
     };
     const relayExistingGuests = () => {
       state.guests.forEach(g => {
-        if (!g.stream) return;
-        if (conn.peer === g.id) return;
+        if (!g.stream) return; if (conn.peer === g.id) return;
         const c = state.peer.call(conn.peer, g.stream, {
           metadata: { role:'guest', guestId: g.id, name: g.name, mode: g.mode }
         });
@@ -1782,12 +1810,10 @@
       });
     };
     const onOpen = () => {
-      startHostCall();
-      relayExistingGuests();
+      startHostCall(); relayExistingGuests();
       if (conn.open) {
         conn.send({ type:'board', text: state.boardText });
         conn.send({ type:'board-style', textColor: state.boardTextColor, bgColor: state.boardBgColor });
-        // Send current lesson state to this new viewer
         if (state.lessonsMode) {
           if (hostYtPlayer && hostYtReady) {
             let videoId = hostYtVideoId, time = 0, playing = false;
@@ -1811,78 +1837,50 @@
     landingError.textContent = '';
     const code = canonicalCode(rawCode);
     if (!code) {
-      landingError.textContent = `That code doesn't match any day. Today (${todayName()}) uses ${todayCode()}.`;
-      return;
+      landingError.textContent = `That code doesn't match any day. Today (${todayName()}) uses ${todayCode()}.`; return;
     }
     if (code !== todayCode()) {
       const otherDay = dayOfCode(code);
-      landingError.textContent = `That's ${otherDay}'s code. Today is ${todayName()} — use ${todayCode()}.`;
-      return;
+      landingError.textContent = `That's ${otherDay}'s code. Today is ${todayName()} — use ${todayCode()}.`; return;
     }
+    state.audioBus = new AudioBus(); state.audioBus.init(); state.audioBus.resume();
 
-    state.audioBus = new AudioBus();
-    state.audioBus.init();
-    state.audioBus.resume();
-
-    state.role = 'viewer';
-    state.code = code;
-    state.radio = false;
-    state.isGuest = false;
-    state.myGuestMode = null;
-    state.guestStream = null;
-    state.guestPipeline = null;
-    state.guestOutStream = null;
+    state.role = 'viewer'; state.code = code; state.radio = false;
+    state.isGuest = false; state.myGuestMode = null;
+    state.guestStream = null; state.guestPipeline = null; state.guestOutStream = null;
     state.soundOn = true;
     state.guests.clear(); state.guestViews.clear(); state.requests.clear();
-    state.boardTextColor = DEFAULT_TEXT_COLOR;
-    state.boardBgColor = DEFAULT_BG_COLOR;
-    state.facingMode = 'user';
-    state.lessonsMode = false;
-    state.activeLessonId = null;
+    state.boardTextColor = DEFAULT_TEXT_COLOR; state.boardBgColor = DEFAULT_BG_COLOR;
+    state.facingMode = 'user'; state.lessonsMode = false; state.activeLessonId = null;
 
-    stage.classList.add('role-viewer');
-    stage.classList.remove('role-host');
+    stage.classList.add('role-viewer'); stage.classList.remove('role-host');
     boardEl.classList.add('viewer-mode');
 
     tilesStrip.querySelectorAll('.tile[data-guestid]').forEach(t => t.remove());
 
     enterRoom();
-    codeText.textContent = code;
-    dayPill.style.display = '';
-    dayText.textContent = todayName();
-    setupShare(code);
+    codeText.textContent = code; dayPill.style.display = '';
+    dayText.textContent = todayName(); setupShare(code);
 
     boardColors.classList.remove('show');
-    boardInput.style.display = 'none';
-    boardView.style.display = '';
-    setBoardView('');
-    applyBoardStyle();
+    boardInput.style.display = 'none'; boardView.style.display = '';
+    setBoardView(''); applyBoardStyle();
     boardLabelText.textContent = 'On‑air board';
     boardEl.classList.remove('lessons-mode');
 
-    micBtn.style.display = 'none';
-    camBtn.style.display = 'none';
-    flipBtn.style.display = 'none';
-    flashBtn.style.display = 'none';
-    filtersBtn.style.display = 'none';
-    lessonsBtn.style.display = 'none';
+    micBtn.style.display = 'none'; camBtn.style.display = 'none';
+    flipBtn.style.display = 'none'; flashBtn.style.display = 'none';
+    filtersBtn.style.display = 'none'; lessonsBtn.style.display = 'none';
     recBtn.style.display = 'none';
-    waveBtn.style.display = '';
-    waveBtn.textContent = '✋ Wave';
-    waveBtn.classList.remove('on');
+    waveBtn.style.display = ''; waveBtn.textContent = '✋ Wave'; waveBtn.classList.remove('on');
     guestRadioBtn.style.display = 'none';
-    viewRadioBtn.style.display = '';
-    viewRadioBtn.classList.remove('on');
-    viewRadioBtn.textContent = '📻 View';
-    soundBtn.style.display = '';
-    updateSoundButton();
+    viewRadioBtn.style.display = ''; viewRadioBtn.classList.remove('on'); viewRadioBtn.textContent = '📻 View';
+    soundBtn.style.display = ''; updateSoundButton();
 
-    filtersBar.classList.remove('open');
-    stage.classList.remove('filters-open');
+    filtersBar.classList.remove('open'); stage.classList.remove('filters-open');
     requestsEl.innerHTML = '';
 
-    hostVideo.classList.remove('mirrored');
-    hostVideo.muted = true;
+    hostVideo.classList.remove('mirrored'); hostVideo.muted = true;
     setStatus('Connecting…', false);
     showWaiting('Connecting to the live…');
     setViewerCount(1);
@@ -1895,15 +1893,12 @@
     if (state.role === 'viewer') {
       try { call.answer(); } catch (e) {}
       state.calls.push(call);
-
       if (meta.role === 'host') {
         call.on('stream', remote => {
-          hostVideo.srcObject = remote;
-          hostVideo.muted = true;
+          hostVideo.srcObject = remote; hostVideo.muted = true;
           hostVideo.play().catch(() => {});
           if (state.audioBus) state.audioBus.add('host', remote);
-          hideWaiting();
-          setStatus('Live', true);
+          hideWaiting(); setStatus('Live', true);
         });
         call.on('close', () => {
           if (state.audioBus) state.audioBus.remove('host');
@@ -1911,15 +1906,12 @@
           showWaiting('The host has ended the live.');
         });
       } else if (meta.role === 'guest') {
-        const gid = meta.guestId;
-        if (gid === state.peer.id) return;
-        const gname = meta.name || 'Guest';
-        const gmode = meta.mode || 'camera';
+        const gid = meta.guestId; if (gid === state.peer.id) return;
+        const gname = meta.name || 'Guest'; const gmode = meta.mode || 'camera';
         state.guestViews.set(gid, { id: gid, name: gname, mode: gmode, call });
         addGuestTile(gid, gname, gmode, false);
         call.on('stream', stream => {
-          const rec = state.guestViews.get(gid);
-          if (rec) rec.stream = stream;
+          const rec = state.guestViews.get(gid); if (rec) rec.stream = stream;
           attachToTile(gid, stream);
           if (state.audioBus) state.audioBus.add('guest-' + gid, stream);
         });
@@ -1931,24 +1923,18 @@
       }
       return;
     }
-
     if (state.role === 'host' && meta.role === 'guest') {
       try { call.answer(); } catch (e) {}
       state.calls.push(call);
-      const gid = meta.guestId;
-      const gname = meta.name || 'Guest';
-      const gmode = meta.mode || 'camera';
+      const gid = meta.guestId; const gname = meta.name || 'Guest'; const gmode = meta.mode || 'camera';
       state.guests.set(gid, { id: gid, name: gname, mode: gmode, call, stream: null });
       addGuestTile(gid, gname, gmode, false);
-
       call.on('stream', stream => {
-        const g = state.guests.get(gid);
-        if (g) g.stream = stream;
+        const g = state.guests.get(gid); if (g) g.stream = stream;
         attachToTile(gid, stream);
         if (state.audioBus) state.audioBus.add('guest-' + gid, stream);
         state.conns.forEach(conn => {
-          if (!conn.open) return;
-          if (conn.peer === gid) return;
+          if (!conn.open) return; if (conn.peer === gid) return;
           const relay = state.peer.call(conn.peer, stream, {
             metadata: { role:'guest', guestId: gid, name: gname, mode: gmode }
           });
@@ -1970,8 +1956,7 @@
           ? { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false }
           : CAM_CONSTRAINTS(state.facingMode || 'user')
       );
-      state.guestStream = raw;
-      state.isGuest = true;
+      state.guestStream = raw; state.isGuest = true;
       state.myGuestMode = mode;
       state.myGuestName = (state.myGuestName || 'Guest').slice(0, 20);
 
@@ -1981,15 +1966,12 @@
         state.guestPipeline.setFilter(state.filterCss, state.filterBeauty);
         state.guestPipeline.setRadioMode(mode === 'radio');
       } else {
-        state.guestPipeline.radioMode = true;
-        state.guestPipeline._running = true;
-        state.guestPipeline._loop();
+        state.guestPipeline.radioMode = true; state.guestPipeline._running = true; state.guestPipeline._loop();
       }
       state.guestOutStream = new MediaStream([
         ...state.guestPipeline.getStream().getVideoTracks(),
         ...raw.getAudioTracks()
       ]);
-
       addGuestTile(state.peer.id, state.myGuestName + ' (you)', mode, true);
       attachToTile(state.peer.id, state.guestOutStream);
 
@@ -1997,26 +1979,22 @@
         metadata: { role: 'guest', guestId: state.peer.id, name: state.myGuestName, mode }
       });
       if (call) { call._guestId = state.peer.id; state.calls.push(call); }
-
       updateGuestUI();
       addMessage('You are on stage. Your microphone is live.', 'system');
     } catch (e) {
       addMessage('Could not start your camera/mic: ' + (e.message || e.name), 'system');
     }
   }
-
   function stopBeingGuest(remote) {
     if (!state.isGuest) return;
     state.calls = state.calls.filter(c => {
-      if (c._guestId === state.peer.id) { try { c.close(); } catch (e) {} return false; }
-      return true;
+      if (c._guestId === state.peer.id) { try { c.close(); } catch (e) {} return false; } return true;
     });
     if (state.guestStream) { state.guestStream.getTracks().forEach(t => t.stop()); state.guestStream = null; }
     if (state.guestPipeline) { state.guestPipeline.stop(); state.guestPipeline = null; }
     state.guestOutStream = null;
     removeGuestTile(state.peer.id);
-    state.isGuest = false;
-    state.myGuestMode = null;
+    state.isGuest = false; state.myGuestMode = null;
     updateGuestUI();
     if (!remote) {
       const conn = state.conns[0];
@@ -2024,32 +2002,22 @@
       addMessage('You left the stage.', 'system');
     }
   }
-
   function updateGuestUI() {
     if (state.isGuest) {
-      waveBtn.textContent = '⏹ Leave stage';
-      waveBtn.classList.add('on');
+      waveBtn.textContent = '⏹ Leave stage'; waveBtn.classList.add('on');
       guestRadioBtn.style.display = '';
       guestRadioBtn.classList.toggle('on', state.myGuestMode === 'radio');
       guestRadioBtn.textContent = state.myGuestMode === 'radio' ? '📻 Radio ON' : '📻 Radio';
-      micBtn.style.display = '';
-      micBtn.textContent = '🎤';
-      micBtn.classList.remove('off');
+      micBtn.style.display = ''; micBtn.textContent = '🎤'; micBtn.classList.remove('off');
       const isCam = state.myGuestMode === 'camera';
-      camBtn.style.display = isCam ? '' : 'none';
-      camBtn.textContent = '📹';
-      camBtn.classList.remove('off');
+      camBtn.style.display = isCam ? '' : 'none'; camBtn.textContent = '📹'; camBtn.classList.remove('off');
       flipBtn.style.display = isCam ? '' : 'none';
     } else {
-      waveBtn.textContent = '✋ Wave';
-      waveBtn.classList.remove('on');
+      waveBtn.textContent = '✋ Wave'; waveBtn.classList.remove('on');
       guestRadioBtn.style.display = 'none';
-      micBtn.style.display = 'none';
-      camBtn.style.display = 'none';
-      flipBtn.style.display = 'none';
+      micBtn.style.display = 'none'; camBtn.style.display = 'none'; flipBtn.style.display = 'none';
     }
   }
-
   guestRadioBtn.addEventListener('click', () => {
     if (!state.isGuest || !state.guestStream) return;
     const next = state.myGuestMode === 'radio' ? 'camera' : 'radio';
@@ -2108,8 +2076,7 @@
   function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
     const paragraphs = String(text).split('\n');
     for (const p of paragraphs) {
-      const words = p.split(' ');
-      let line = '';
+      const words = p.split(' '); let line = '';
       for (let n = 0; n < words.length; n++) {
         const test = line + words[n] + ' ';
         if (ctx.measureText(test).width > maxWidth && n > 0) {
@@ -2133,22 +2100,15 @@
     const sw = size / scale, sh = size / scale;
     const sx = (vw - sw) / 2, sy = (vh - sh) / 2;
     ctx.save(); roundRect(ctx, x, y, size, size, 16); ctx.clip();
-    if (mirrored) {
-      ctx.translate(x + size, y); ctx.scale(-1, 1);
-      ctx.drawImage(vid, sx, sy, sw, sh, 0, 0, size, size);
-    } else {
-      ctx.drawImage(vid, sx, sy, sw, sh, x, y, size, size);
-    }
+    if (mirrored) { ctx.translate(x + size, y); ctx.scale(-1, 1); ctx.drawImage(vid, sx, sy, sw, sh, 0, 0, size, size); }
+    else { ctx.drawImage(vid, sx, sy, sw, sh, x, y, size, size); }
     ctx.restore();
   }
-
   async function startRecording() {
     if (state.recording) return;
     if (!window.MediaRecorder) { addMessage('Recording is not supported on this browser.', 'system'); return; }
-    const canvas = document.createElement('canvas');
-    canvas.width = 1280; canvas.height = 720;
+    const canvas = document.createElement('canvas'); canvas.width = 1280; canvas.height = 720;
     const ctx = canvas.getContext('2d');
-
     let ac = null, dest = null;
     try {
       ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -2162,17 +2122,13 @@
         }
       });
     } catch (e) {}
-
     const canvasStream = canvas.captureStream(30);
     const tracks = [...canvasStream.getVideoTracks()];
     if (dest && dest.stream.getAudioTracks().length) tracks.push(...dest.stream.getAudioTracks());
     const combined = new MediaStream(tracks);
-
     const mimes = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1', 'video/mp4',
       'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
-    let mime = '';
-    for (const m of mimes) { if (MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
-
+    let mime = ''; for (const m of mimes) { if (MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
     const rec = new MediaRecorder(combined, mime ? { mimeType: mime } : undefined);
     const chunks = [];
     rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
@@ -2188,68 +2144,44 @@
       addMessage(`Recording saved as .${ext}`, 'system');
     };
     rec.start(2000);
-
     const stateRec = { rec, ac, canvas, ctx, raf: null, mime };
     state.recording = stateRec;
-
     const draw = () => {
-      ctx.fillStyle = state.boardBgColor || '#0a0d13';
-      ctx.fillRect(0, 0, 1280, 720);
+      ctx.fillStyle = state.boardBgColor || '#0a0d13'; ctx.fillRect(0, 0, 1280, 720);
       ctx.fillStyle = state.boardTextColor || '#e9eefb';
-      ctx.font = 'bold 34px -apple-system, "Segoe UI", sans-serif';
-      ctx.textBaseline = 'top';
+      ctx.font = 'bold 34px -apple-system, "Segoe UI", sans-serif'; ctx.textBaseline = 'top';
       const boardLine = state.lessonsMode
         ? ('📺 Lesson: ' + currentLessonTitle())
         : (state.boardText || ('Live on ' + APP_NAME + ' · ' + (state.code || todayCode())));
       wrapText(ctx, boardLine, 50, 50, 820, 44);
-
       if (hostVideo.readyState >= 2) {
         drawTile(ctx, hostVideo, 900, 50, 340, hostVideo.classList.contains('mirrored'));
-        ctx.fillStyle = 'rgba(0,0,0,.65)';
-        ctx.fillRect(912, 348, 90, 30);
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 16px -apple-system, sans-serif';
-        ctx.fillText('HOST', 924, 368);
+        ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(912, 348, 90, 30);
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 16px -apple-system, sans-serif'; ctx.fillText('HOST', 924, 368);
       }
-
       const guestArr = Array.from(state.guests.values());
-      const tw = 150, th = 150, gap = 12;
-      let gx = 50;
-      const gy = 720 - th - 50;
+      const tw = 150, th = 150, gap = 12; let gx = 50; const gy = 720 - th - 50;
       for (const g of guestArr) {
         const tile = tilesStrip.querySelector(`.tile[data-guestid="${CSS.escape(g.id)}"]`);
         const vid = tile ? tile.querySelector('video') : null;
-        if (g.mode !== 'radio' && vid) {
-          drawTile(ctx, vid, gx, gy, tw, vid.classList.contains('mirrored'));
-        } else {
+        if (g.mode !== 'radio' && vid) { drawTile(ctx, vid, gx, gy, tw, vid.classList.contains('mirrored')); }
+        else {
           const bg = ctx.createLinearGradient(gx, gy, gx + tw, gy + th);
           bg.addColorStop(0, '#14203a'); bg.addColorStop(1, '#0a0e16');
           ctx.fillStyle = bg; roundRect(ctx, gx, gy, tw, th, 16); ctx.fill();
-          ctx.fillStyle = '#8b9ec4';
-          ctx.font = 'bold 40px -apple-system, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('📻', gx + tw / 2, gy + th / 2 + 12);
-          ctx.textAlign = 'left';
+          ctx.fillStyle = '#8b9ec4'; ctx.font = 'bold 40px -apple-system, sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText('📻', gx + tw / 2, gy + th / 2 + 12); ctx.textAlign = 'left';
         }
-        ctx.fillStyle = 'rgba(0,0,0,.65)';
-        ctx.fillRect(gx + 8, gy + th - 34, tw - 16, 26);
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 13px -apple-system, sans-serif';
+        ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(gx + 8, gy + th - 34, tw - 16, 26);
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 13px -apple-system, sans-serif';
         ctx.fillText(String(g.name).slice(0, 16), gx + 16, gy + th - 16);
-        gx += tw + gap;
-        if (gx + tw > 1280 - 50) break;
+        gx += tw + gap; if (gx + tw > 1280 - 50) break;
       }
-
-      ctx.fillStyle = 'rgba(255,255,255,.6)';
-      ctx.font = '13px -apple-system, sans-serif';
-      ctx.textAlign = 'right';
-      ctx.fillText(new Date().toLocaleString(), 1230, 20);
-      ctx.textAlign = 'left';
-
+      ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = '13px -apple-system, sans-serif';
+      ctx.textAlign = 'right'; ctx.fillText(new Date().toLocaleString(), 1230, 20); ctx.textAlign = 'left';
       stateRec.raf = requestAnimationFrame(draw);
     };
     draw();
-
     updateRecordingUI();
     addMessage(`Recording started (${mime.includes('mp4') ? 'MP4' : 'WebM'}).`, 'system');
   }
@@ -2259,14 +2191,12 @@
     if (raf) cancelAnimationFrame(raf);
     try { rec.stop(); } catch (e) {}
     try { if (ac) ac.close(); } catch (e) {}
-    state.recording = null;
-    updateRecordingUI();
+    state.recording = null; updateRecordingUI();
     addMessage('Recording stopped — download starting.', 'system');
   }
   function updateRecordingUI() {
     const on = !!state.recording;
-    recBtn.classList.toggle('on', on);
-    recBtn.textContent = on ? '⏹ Stop' : '⏺ Rec';
+    recBtn.classList.toggle('on', on); recBtn.textContent = on ? '⏹ Stop' : '⏺ Rec';
     recIndicator.classList.toggle('active', on);
   }
   recBtn.addEventListener('click', () => { if (state.recording) stopRecording(); else startRecording(); });
@@ -2290,8 +2220,7 @@
     catch (e) {
       const ta = document.createElement('textarea');
       ta.value = link; document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); } catch (_) {}
-      ta.remove();
+      try { document.execCommand('copy'); } catch (_) {} ta.remove();
     }
     codePill.textContent = 'Copied ✓';
     setTimeout(() => { codePill.innerHTML = original; }, 1400);
@@ -2300,15 +2229,13 @@
   /* ================= PEER ================= */
   function createPeer(id) {
     state.peer = id ? new Peer(id, { debug: 1 }) : new Peer({ debug: 1 });
-
     state.peer.on('open', () => {
       if (state.role === 'host') {
         setStatus('Live', true);
         addMessage(`You are live on ${APP_NAME} — ${todayName()}'s code: ${state.code}.`, 'system');
       } else {
         const conn = state.peer.connect(ID_PREFIX + state.code, { reliable: true });
-        state.conns.push(conn);
-        wireConnection(conn);
+        state.conns.push(conn); wireConnection(conn);
         conn.on('open', () => setStatus('Connected — waiting for video…', true));
         conn.on('close', () => {
           setStatus('Disconnected', false);
@@ -2316,11 +2243,9 @@
         });
       }
     });
-
     state.peer.on('connection', onIncomingConnection);
     state.peer.on('call', onIncomingCall);
     state.peer.on('disconnected', () => { try { state.peer.reconnect(); } catch (e) {} });
-
     state.peer.on('error', err => {
       const type = err && err.type;
       if (type === 'peer-unavailable') {
@@ -2334,16 +2259,13 @@
       } else if (type === 'network' || type === 'server-error' || type === 'socket-error') {
         setStatus('Connection problem', false);
         if (state.role === 'viewer') showWaiting('Connection lost. Reconnecting…');
-      } else {
-        console.warn('[PeerJS]', err);
-      }
+      } else { console.warn('[PeerJS]', err); }
     });
   }
 
   /* ================= NAVIGATION ================= */
   function enterRoom() {
-    landing.classList.remove('active');
-    room.classList.add('active');
+    landing.classList.remove('active'); room.classList.add('active');
     if (window.innerWidth > 820) chatPanel.classList.add('open');
   }
   function leaveRoom() {
@@ -2355,116 +2277,60 @@
     }
     disableFlash();
     if (state.audioBus) { state.audioBus.stop(); state.audioBus = null; }
-
     state.calls.forEach(c => { try { c.close(); } catch (e) {} });
     state.guestRelays.forEach(c => { try { c.close(); } catch (e) {} });
     state.calls = []; state.guestRelays = [];
-
     try { state.peer && state.peer.destroy(); } catch (e) {}
     state.peer = null;
-
     if (state.localStream) { state.localStream.getTracks().forEach(t => t.stop()); state.localStream = null; }
     if (state.pipeline) { state.pipeline.stop(); state.pipeline = null; }
     if (state.outStream) { state.outStream.getVideoTracks().forEach(t => t.stop()); state.outStream = null; }
     if (state.guestStream) { state.guestStream.getTracks().forEach(t => t.stop()); state.guestStream = null; }
     if (state.guestPipeline) { state.guestPipeline.stop(); state.guestPipeline = null; }
     state.guestOutStream = null;
-
-    hostDestroyPlayer();
-    viewerDestroyPlayer();
-
-    hostVideo.srcObject = null;
-    hostVideo.classList.remove('mirrored');
+    hostDestroyPlayer(); viewerDestroyPlayer();
+    hostVideo.srcObject = null; hostVideo.classList.remove('mirrored');
     hostVideo.style.visibility = 'visible';
-
     tilesStrip.querySelectorAll('.tile[data-guestid]').forEach(t => t.remove());
-    requestsEl.innerHTML = '';
-    listenPrompt.classList.remove('show');
-
-    state.conns = [];
-    state.role = null;
-    state.code = null;
-    state.radio = false;
-    state.boardText = '';
-    state.boardTextColor = DEFAULT_TEXT_COLOR;
-    state.boardBgColor = DEFAULT_BG_COLOR;
-    state.chatOpen = false;
-    state.unread = 0;
-    state.filterId = 'natural';
-    state.filterCss = 'none';
-    state.filterBeauty = 0;
-    state.filtersOpen = false;
-    state.torchSupported = false;
-    state.torch = false;
-    state.screenLight = false;
-    state.isGuest = false;
-    state.myGuestMode = null;
-    state.myGuestName = '';
-    state.soundOn = true;
-    state.facingMode = 'user';
-    state.guests.clear();
-    state.guestViews.clear();
-    state.requests.clear();
-    state.lessonsMode = false;
-    state.activeLessonId = null;
+    requestsEl.innerHTML = ''; listenPrompt.classList.remove('show');
+    state.conns = []; state.role = null; state.code = null; state.radio = false;
+    state.boardText = ''; state.boardTextColor = DEFAULT_TEXT_COLOR; state.boardBgColor = DEFAULT_BG_COLOR;
+    state.chatOpen = false; state.unread = 0;
+    state.filterId = 'natural'; state.filterCss = 'none'; state.filterBeauty = 0;
+    state.filtersOpen = false; state.torchSupported = false; state.torch = false; state.screenLight = false;
+    state.isGuest = false; state.myGuestMode = null; state.myGuestName = '';
+    state.soundOn = true; state.facingMode = 'user';
+    state.guests.clear(); state.guestViews.clear(); state.requests.clear();
+    state.lessonsMode = false; state.activeLessonId = null;
 
     boardEl.classList.remove('lessons-mode', 'viewer-mode');
     boardLabelText.textContent = 'On‑air board';
     stage.classList.remove('role-host', 'role-viewer', 'radio', 'filters-open');
-
     screenlight.classList.remove('on');
-    filtersBar.classList.remove('open');
-    filtersBtn.classList.remove('on');
-    flashBtn.classList.remove('on');
-    filtersScroll.innerHTML = '';
-
-    boardInput.value = '';
-    boardInput.style.display = '';
-    boardView.style.display = 'none';
-    boardView.textContent = '';
-    boardColors.classList.remove('show');
-    applyBoardStyle();
-
+    filtersBar.classList.remove('open'); filtersBtn.classList.remove('on');
+    flashBtn.classList.remove('on'); filtersScroll.innerHTML = '';
+    boardInput.value = ''; boardInput.style.display = '';
+    boardView.style.display = 'none'; boardView.textContent = '';
+    boardColors.classList.remove('show'); applyBoardStyle();
     dayPill.style.display = 'none';
-    viewRadioBtn.textContent = '📻 View';
-    viewRadioBtn.classList.remove('on');
-    viewRadioBtn.style.display = 'none';
-    guestRadioBtn.textContent = '📻 Radio';
-    guestRadioBtn.classList.remove('on');
-    guestRadioBtn.style.display = 'none';
-    waveBtn.textContent = '✋ Wave';
-    waveBtn.classList.remove('on');
-    waveBtn.style.display = 'none';
-    soundBtn.classList.remove('on');
-    soundBtn.textContent = '🔊';
-    soundBtn.style.display = 'none';
-    recBtn.classList.remove('on');
-    recBtn.textContent = '⏺ Rec';
+    viewRadioBtn.textContent = '📻 View'; viewRadioBtn.classList.remove('on'); viewRadioBtn.style.display = 'none';
+    guestRadioBtn.textContent = '📻 Radio'; guestRadioBtn.classList.remove('on'); guestRadioBtn.style.display = 'none';
+    waveBtn.textContent = '✋ Wave'; waveBtn.classList.remove('on'); waveBtn.style.display = 'none';
+    soundBtn.classList.remove('on'); soundBtn.textContent = '🔊'; soundBtn.style.display = 'none';
+    recBtn.classList.remove('on'); recBtn.textContent = '⏺ Rec';
     recIndicator.classList.remove('active');
-
-    micBtn.style.display = 'none';
-    camBtn.style.display = 'none';
-    flipBtn.style.display = 'none';
-    flashBtn.style.display = 'none';
-    filtersBtn.style.display = 'none';
-    lessonsBtn.style.display = 'none';
-    lessonsBtn.classList.remove('on');
-    lessonsBtn.textContent = '📺 Lessons';
-    recBtn.style.display = 'none';
-    endBtn.textContent = 'End';
-
+    micBtn.style.display = 'none'; camBtn.style.display = 'none';
+    flipBtn.style.display = 'none'; flashBtn.style.display = 'none';
+    filtersBtn.style.display = 'none'; lessonsBtn.style.display = 'none';
+    lessonsBtn.classList.remove('on'); lessonsBtn.textContent = '📺 Lessons';
+    recBtn.style.display = 'none'; endBtn.textContent = 'End';
     chatToggle.classList.remove('has-unread');
-    messagesEl.innerHTML = '';
-    chatPanel.classList.remove('open');
+    messagesEl.innerHTML = ''; chatPanel.classList.remove('open');
     shareMenu.classList.remove('open');
     setStatus('Connecting…', false);
-    codeText.textContent = '·········';
-    hideWaiting();
-
-    room.classList.remove('active');
-    landing.classList.add('active');
-    landingError.textContent = '';
-    codeInput.value = '';
+    codeText.textContent = '·········'; hideWaiting();
+    room.classList.remove('active'); landing.classList.add('active');
+    landingError.textContent = ''; codeInput.value = '';
   }
 
   /* ================= MEDIA CONTROLS ================= */
@@ -2474,22 +2340,19 @@
     return null;
   }
   micBtn.addEventListener('click', () => {
-    const s = activeStream(); const track = s && s.getAudioTracks()[0];
-    if (!track) return;
+    const s = activeStream(); const track = s && s.getAudioTracks()[0]; if (!track) return;
     track.enabled = !track.enabled;
     micBtn.classList.toggle('off', !track.enabled);
     micBtn.textContent = track.enabled ? '🎤' : '🔇';
   });
   camBtn.addEventListener('click', () => {
-    const s = activeStream(); const track = s && s.getVideoTracks()[0];
-    if (!track) return;
+    const s = activeStream(); const track = s && s.getVideoTracks()[0]; if (!track) return;
     track.enabled = !track.enabled;
     camBtn.classList.toggle('off', !track.enabled);
     camBtn.textContent = track.enabled ? '📹' : '🚫';
   });
   flashBtn.addEventListener('click', toggleFlash);
   filtersBtn.addEventListener('click', toggleFiltersBar);
-
   endBtn.addEventListener('click', () => {
     if (state.role === 'host' && !confirm('End the live for everyone?')) return;
     leaveRoom();
@@ -2500,23 +2363,18 @@
     state.chatOpen = !state.chatOpen;
     chatPanel.classList.toggle('open', state.chatOpen);
     if (state.chatOpen) {
-      state.unread = 0;
-      chatToggle.classList.remove('has-unread');
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-      msgInput.focus();
+      state.unread = 0; chatToggle.classList.remove('has-unread');
+      messagesEl.scrollTop = messagesEl.scrollHeight; msgInput.focus();
     }
   });
   composer.addEventListener('submit', e => {
-    e.preventDefault();
-    sendChat(msgInput.value);
-    msgInput.value = '';
-    msgInput.focus();
+    e.preventDefault(); sendChat(msgInput.value);
+    msgInput.value = ''; msgInput.focus();
   });
 
   /* ================= ADMIN GATE ================= */
   function openAdmin() {
-    adminPass.value = '';
-    adminError.textContent = '';
+    adminPass.value = ''; adminError.textContent = '';
     adminModal.classList.add('open');
     setTimeout(() => adminPass.focus(), 60);
   }
@@ -2548,14 +2406,11 @@
 
   /* ================= DEEP LINK ================= */
   (function handleHash() {
-    const m = location.hash.match(/room=([A-Za-z0-9%-]{5,12})/);
-    if (!m) return;
+    const m = location.hash.match(/room=([A-Za-z0-9%-]{5,12})/); if (!m) return;
     const hashCode = decodeURIComponent(m[1]);
-    const canonical = canonicalCode(hashCode);
-    if (!canonical) return;
+    const canonical = canonicalCode(hashCode); if (!canonical) return;
     const hashDay = dayOfCode(canonical);
-    const today = todayName();
-    const todaysCode = todayCode();
+    const today = todayName(); const todaysCode = todayCode();
     if (hashDay && hashDay !== today) {
       codeInput.value = todaysCode;
       landingError.textContent = `That link was for ${hashDay}'s live. Today is ${today} — use ${todaysCode}.`;
