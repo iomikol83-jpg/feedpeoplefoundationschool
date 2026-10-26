@@ -90,7 +90,6 @@
     transition:border-color .16s, background .16s, color .16s}
   .mode-btn.active{border-color:var(--accent);background:rgba(79,140,255,.18);color:#fff}
 
-  /* ---------- BROWSE MODAL ---------- */
   .browse-card{max-width:660px;width:100%}
   .browse-card h2{margin-bottom:4px}
   .browse-card p{margin-bottom:14px}
@@ -509,7 +508,6 @@
   </div>
 </div>
 
-<!-- BROWSE MODAL -->
 <div id="browseModal" class="modal">
   <div class="modal-card browse-card">
     <h2>Browse YouTube</h2>
@@ -669,7 +667,8 @@
   const LESSONS_KEY    = 'classapp_lessons_v1';
   const SYNC_INTERVAL  = 500;
   const SYNC_PERIODIC  = 2000;
-  const DRIFT_THRESH   = 2.0;
+  const DRIFT_THRESH   = 1.0;   /* tighter play/pause sync */
+  const REC_FPS        = 30;
 
   const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const DAY_CODES = ['dimJerry7','lunJerry1','marJerry2','merJerry3','jeuJerry4','venJerry5','samJerry6'];
@@ -952,7 +951,6 @@
   const ytSlotHost    = $('#ytSlotHost');
   const ytSlotViewer  = $('#ytSlotViewer');
 
-  /* Browse modal elements */
   const browseModal     = $('#browseModal');
   const browseTabs      = document.querySelectorAll('.browse-tab');
   const browseSearchRow = $('#browseSearchRow');
@@ -1026,21 +1024,29 @@
         enablejsapi:1, origin: location.origin },
       events: {
         onReady: () => { hostYtReady = true; lessonsVideoWrap.classList.add('has-video'); hostBroadcastSync(); },
-        onStateChange: () => { hostBroadcastSync(); }
+        onStateChange: (event) => { hostBroadcastSync(event.data); }
       }
     });
   }
-  function hostBroadcastSync() {
+  function hostBroadcastSync(eventState) {
     if (state.role !== 'host') return;
     if (!hostYtPlayer || !hostYtReady) {
-      broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId: null }); return;
+      broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId: null });
+      hostLastSentAt = Date.now();
+      return;
     }
-    let videoId = hostYtVideoId, time = 0, playing = false;
+    let videoId = hostYtVideoId, time = 0, ytState = -1;
     try { const d = hostYtPlayer.getVideoData && hostYtPlayer.getVideoData(); if (d && d.video_id) videoId = d.video_id; } catch (e) {}
     try { time = hostYtPlayer.getCurrentTime() || 0; } catch (e) {}
-    try { playing = hostYtPlayer.getPlayerState() === 1; } catch (e) {}
-    broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId, time, playing });
+    if (typeof eventState === 'number') ytState = eventState;
+    else { try { ytState = hostYtPlayer.getPlayerState(); } catch (e) { ytState = -1; } }
+    /* 1 = playing, 3 = buffering (host intends to play) */
+    const playing = (ytState === 1 || ytState === 3);
+    broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId, time, playing, ytState });
     hostLastSentAt = Date.now();
+    hostLastState  = ytState;
+    hostLastTime   = time;
+    hostLastCheck  = Date.now();
   }
   setInterval(() => {
     if (state.role !== 'host' || !state.lessonsMode) return;
@@ -1054,7 +1060,7 @@
       const expected = curState === 1 ? elapsed : 0;
       if (Math.abs((curTime - hostLastTime) - expected) > 1.5) seekDetected = true;
     }
-    if (curState !== hostLastState || seekDetected || now - hostLastSentAt > SYNC_PERIODIC) hostBroadcastSync();
+    if (curState !== hostLastState || seekDetected || now - hostLastSentAt > SYNC_PERIODIC) hostBroadcastSync(curState);
     hostLastState = curState; hostLastTime = curTime; hostLastCheck = now;
   }, SYNC_INTERVAL);
 
@@ -1074,7 +1080,13 @@
         viewerYtVideoId = sync.videoId;
         try { viewerYtPlayer.loadVideoById(sync.videoId, sync.time || 0); } catch (e) {}
         if (!sync.playing) setTimeout(() => { try { viewerYtPlayer.pauseVideo(); } catch (e) {} }, 300);
+      } else {
+        viewerApplySync(sync);
       }
+      return;
+    }
+    if (viewerYtPlayer) {           /* still initializing: queue latest, don't recreate */
+      viewerPendingSync = sync;
       return;
     }
     viewerYtVideoId = sync.videoId;
@@ -1085,8 +1097,10 @@
       events: {
         onReady: (e) => {
           viewerYtReady = true; lessonsVideoWrap.classList.add('has-video');
-          if (sync.time > 0) { try { e.target.seekTo(sync.time, true); } catch (er) {} }
-          if (sync.playing) {
+          const finalSync = viewerPendingSync || sync;
+          viewerPendingSync = null;
+          if (finalSync.time > 0) { try { e.target.seekTo(finalSync.time, true); } catch (er) {} }
+          if (finalSync.playing) {
             try { e.target.playVideo(); } catch (er) {}
             if (state.soundOn) setTimeout(() => { try { viewerYtPlayer.unMute(); } catch (er) {} }, 300);
           } else { try { e.target.pauseVideo(); } catch (er) {} }
@@ -1107,11 +1121,11 @@
     try { curTime = viewerYtPlayer.getCurrentTime() || 0; } catch (e) {}
     try { curState = viewerYtPlayer.getPlayerState(); } catch (e) {}
     if (data.playing) {
-      if (curState !== 1) { try { viewerYtPlayer.playVideo(); } catch (e) {} }
+      if (curState !== 1 && curState !== 3) { try { viewerYtPlayer.playVideo(); } catch (e) {} }
       if (Math.abs(curTime - data.time) > DRIFT_THRESH) { try { viewerYtPlayer.seekTo(data.time, true); } catch (e) {} }
     } else {
-      if (curState === 1) { try { viewerYtPlayer.pauseVideo(); } catch (e) {} }
-      if (Math.abs(curTime - data.time) > 1.0) { try { viewerYtPlayer.seekTo(data.time, true); } catch (e) {} }
+      if (curState !== 2 && curState !== 0) { try { viewerYtPlayer.pauseVideo(); } catch (e) {} }
+      if (Math.abs(curTime - data.time) > DRIFT_THRESH) { try { viewerYtPlayer.seekTo(data.time, true); } catch (e) {} }
     }
   }
   function viewerDestroyPlayer() {
@@ -1816,11 +1830,12 @@
         conn.send({ type:'board-style', textColor: state.boardTextColor, bgColor: state.boardBgColor });
         if (state.lessonsMode) {
           if (hostYtPlayer && hostYtReady) {
-            let videoId = hostYtVideoId, time = 0, playing = false;
+            let videoId = hostYtVideoId, time = 0, ytState = -1;
             try { const d = hostYtPlayer.getVideoData(); if (d && d.video_id) videoId = d.video_id; } catch (e) {}
             try { time = hostYtPlayer.getCurrentTime() || 0; } catch (e) {}
-            try { playing = hostYtPlayer.getPlayerState() === 1; } catch (e) {}
-            conn.send({ type:'lesson-sync', on: true, videoId, time, playing });
+            try { ytState = hostYtPlayer.getPlayerState(); } catch (e) {}
+            const playing = (ytState === 1 || ytState === 3);
+            conn.send({ type:'lesson-sync', on: true, videoId, time, playing, ytState });
           } else {
             conn.send({ type:'lesson-sync', on: true, videoId: null });
           }
@@ -2091,113 +2106,246 @@
     ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
   }
-  function drawTile(ctx, vid, x, y, size, mirrored) {
-    if (!vid || vid.readyState < 2 || !vid.videoWidth) {
+  function sourceSize(src) {
+    if (!src) return null;
+    if (typeof src.videoWidth === 'number') {
+      if (src.readyState < 2 || !src.videoWidth) return null;
+      return { w: src.videoWidth, h: src.videoHeight };
+    }
+    if (src.width && src.height) return { w: src.width, h: src.height };
+    return null;
+  }
+  function drawTile(ctx, src, x, y, size, mirrored) {
+    const dim = sourceSize(src);
+    if (!dim) {
       ctx.fillStyle = '#0b0f16'; roundRect(ctx, x, y, size, size, 16); ctx.fill(); return;
     }
-    const vw = vid.videoWidth, vh = vid.videoHeight;
-    const scale = Math.max(size / vw, size / vh);
+    const scale = Math.max(size / dim.w, size / dim.h);
     const sw = size / scale, sh = size / scale;
-    const sx = (vw - sw) / 2, sy = (vh - sh) / 2;
+    const sx = (dim.w - sw) / 2, sy = (dim.h - sh) / 2;
     ctx.save(); roundRect(ctx, x, y, size, size, 16); ctx.clip();
-    if (mirrored) { ctx.translate(x + size, y); ctx.scale(-1, 1); ctx.drawImage(vid, sx, sy, sw, sh, 0, 0, size, size); }
-    else { ctx.drawImage(vid, sx, sy, sw, sh, x, y, size, size); }
+    if (mirrored) { ctx.translate(x + size, y); ctx.scale(-1, 1); ctx.drawImage(src, sx, sy, sw, sh, 0, 0, size, size); }
+    else { ctx.drawImage(src, sx, sy, sw, sh, x, y, size, size); }
     ctx.restore();
+  }
+  function hostVideoSource() {
+    if (state.pipeline && state.pipeline.canvas && state.pipeline._running) return state.pipeline.canvas;
+    return hostVideo;
+  }
+  function renderRecordingFrame(ctx) {
+    const W = ctx.canvas.width, H = ctx.canvas.height;
+    ctx.fillStyle = state.boardBgColor || DEFAULT_BG_COLOR;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = state.boardTextColor || DEFAULT_TEXT_COLOR;
+    ctx.font = 'bold 34px -apple-system, "Segoe UI", sans-serif';
+    const boardLine = state.lessonsMode
+      ? ('📺 Lesson: ' + currentLessonTitle())
+      : (state.boardText || ('Live on ' + APP_NAME + ' · ' + (state.code || todayCode())));
+    wrapText(ctx, boardLine, 50, 50, 820, 44);
+
+    const hostSrc = hostVideoSource();
+    if (sourceSize(hostSrc)) {
+      const mirrored = hostSrc === hostVideo && hostVideo.classList.contains('mirrored');
+      drawTile(ctx, hostSrc, 900, 50, 340, mirrored);
+      ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(912, 348, 90, 30);
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 16px -apple-system, sans-serif';
+      ctx.fillText('HOST', 924, 368);
+    }
+
+    const guestArr = Array.from(state.guests.values());
+    const tw = 150, th = 150, gap = 12;
+    let gx = 50;
+    const gy = H - th - 50;
+    for (const g of guestArr) {
+      const tile = tilesStrip.querySelector('.tile[data-guestid="' + CSS.escape(g.id) + '"]');
+      const vid = tile ? tile.querySelector('video') : null;
+      if (g.mode !== 'radio' && vid && sourceSize(vid)) {
+        drawTile(ctx, vid, gx, gy, tw, vid.classList.contains('mirrored'));
+      } else {
+        const bg = ctx.createLinearGradient(gx, gy, gx + tw, gy + th);
+        bg.addColorStop(0, '#14203a'); bg.addColorStop(1, '#0a0e16');
+        ctx.fillStyle = bg; roundRect(ctx, gx, gy, tw, th, 16); ctx.fill();
+        ctx.fillStyle = '#8b9ec4'; ctx.font = 'bold 40px -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('📻', gx + tw / 2, gy + th / 2 + 12);
+        ctx.textAlign = 'left';
+      }
+      ctx.fillStyle = 'rgba(0,0,0,.65)';
+      ctx.fillRect(gx + 8, gy + th - 34, tw - 16, 26);
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 13px -apple-system, sans-serif';
+      ctx.fillText(String(g.name).slice(0, 16), gx + 16, gy + th - 16);
+      gx += tw + gap;
+      if (gx + tw > W - 50) break;
+    }
+
+    if (Math.floor(Date.now() / 600) % 2 === 0) {
+      ctx.fillStyle = 'rgba(255,77,106,.95)';
+      ctx.beginPath(); ctx.arc(W - 196, 26, 7, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(255,255,255,.72)';
+    ctx.font = 'bold 13px -apple-system, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('REC  ' + new Date().toLocaleTimeString(), W - 50, 18);
+    ctx.textAlign = 'left';
+  }
+
+  function recSupported() {
+    return !!(window.MediaRecorder && window.HTMLCanvasElement && HTMLCanvasElement.prototype.captureStream);
+  }
+  function pickRecorderMime() {
+    if (!MediaRecorder.isTypeSupported) return '';
+    const list = [
+      'video/webm;codecs=vp8,opus',
+      'video/webm;codecs=vp9,opus',
+      'video/webm',
+      'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+      'video/mp4'
+    ];
+    for (const m of list) { try { if (MediaRecorder.isTypeSupported(m)) return m; } catch (e) {} }
+    return '';
+  }
+  function createRecorder(stream) {
+    const preferred = pickRecorderMime();
+    const tries = preferred ? [preferred, ''] : [''];
+    let lastErr = null;
+    for (const m of tries) {
+      try {
+        const rec = m ? new MediaRecorder(stream, { mimeType: m }) : new MediaRecorder(stream);
+        return { rec, mime: rec.mimeType || m || 'video/webm' };
+      } catch (e) { lastErr = e; }
+    }
+    throw lastErr || new Error('MediaRecorder could not be created');
+  }
+  function updateRecordingUI() {
+    const r = state.recording;
+    recBtn.classList.toggle('on', !!r);
+    recBtn.textContent = r ? (r.stopping ? '⏳ Saving…' : '⏹ Stop') : '⏺ Rec';
+    recIndicator.classList.toggle('active', !!r && !r.stopping);
+  }
+  function finalizeRecording(r) {
+    if (!r || r.finalized) return;
+    r.finalized = true;
+    if (r.raf) { cancelAnimationFrame(r.raf); r.raf = null; }
+    try { if (r.canvasStream) r.canvasStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+    try { if (r.ac && r.ac.state !== 'closed') r.ac.close(); } catch (e) {}
+    if (state.recording === r) state.recording = null;
+    updateRecordingUI();
+  }
+  function saveRecording(r) {
+    const chunks = r.chunks || [];
+    if (!chunks.length) { addMessage('No recording data was captured.', 'system'); return; }
+    const type = r.mime || 'video/webm';
+    const blob = new Blob(chunks, { type });
+    const ext = type.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'classapp-jerry-' + (state.code || todayCode()) + '-' +
+      new Date().toISOString().replace(/[:.]/g, '-') + '.' + ext;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { try { a.remove(); } catch (e) {} URL.revokeObjectURL(url); }, 60000);
+    addMessage('Recording saved as .' + ext + ' (' + (blob.size / 1048576).toFixed(1) + ' MB).', 'system');
   }
   async function startRecording() {
     if (state.recording) return;
-    if (!window.MediaRecorder) { addMessage('Recording is not supported on this browser.', 'system'); return; }
-    const canvas = document.createElement('canvas'); canvas.width = 1280; canvas.height = 720;
-    const ctx = canvas.getContext('2d');
+    if (state.role !== 'host') { addMessage('Only the host can record the live.', 'system'); return; }
+    if (!recSupported()) {
+      addMessage('Recording is not supported on this browser. Try Chrome on desktop or Android.', 'system');
+      return;
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = 1280; canvas.height = 720;
+    const ctx = canvas.getContext('2d', { alpha: false });
+    if (!ctx) { addMessage('Could not start recording — canvas unavailable.', 'system'); return; }
+
     let ac = null, dest = null;
     try {
-      ac = new (window.AudioContext || window.webkitAudioContext)();
-      dest = ac.createMediaStreamDestination();
-      if (state.localStream && state.localStream.getAudioTracks().length) {
-        ac.createMediaStreamSource(state.localStream).connect(dest);
-      }
-      state.guests.forEach(g => {
-        if (g.stream && g.stream.getAudioTracks().length) {
-          try { ac.createMediaStreamSource(g.stream).connect(dest); } catch (e) {}
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) {
+        ac = new AC();
+        dest = ac.createMediaStreamDestination();
+        const sources = [];
+        if (state.localStream) sources.push(state.localStream);
+        state.guests.forEach(g => { if (g.stream) sources.push(g.stream); });
+        for (const s of sources) {
+          try { if (s.getAudioTracks().length) ac.createMediaStreamSource(s).connect(dest); } catch (e) {}
         }
-      });
-    } catch (e) {}
-    const canvasStream = canvas.captureStream(30);
+        if (ac.state === 'suspended') { try { await ac.resume(); } catch (e) {} }
+      }
+    } catch (e) { ac = null; dest = null; }
+
+    let canvasStream = null;
+    try { canvasStream = canvas.captureStream(REC_FPS); } catch (e) { canvasStream = null; }
+    if (!canvasStream || !canvasStream.getVideoTracks().length) {
+      try { if (ac) ac.close(); } catch (e) {}
+      addMessage('Could not capture the canvas for recording.', 'system');
+      return;
+    }
     const tracks = [...canvasStream.getVideoTracks()];
     if (dest && dest.stream.getAudioTracks().length) tracks.push(...dest.stream.getAudioTracks());
     const combined = new MediaStream(tracks);
-    const mimes = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1', 'video/mp4',
-      'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
-    let mime = ''; for (const m of mimes) { if (MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
-    const rec = new MediaRecorder(combined, mime ? { mimeType: mime } : undefined);
-    const chunks = [];
-    rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+
+    let rec, mime;
+    try { ({ rec, mime } = createRecorder(combined)); }
+    catch (e) {
+      try { canvasStream.getTracks().forEach(t => t.stop()); } catch (er) {}
+      try { if (ac) ac.close(); } catch (er) {}
+      addMessage('Could not start the recorder: ' + (e.message || e.name || 'unknown'), 'system');
+      return;
+    }
+    const r = {
+      rec, ac, mime, chunks: [], canvasStream, ctx,
+      raf: null, lastDraw: 0, finalized: false, stopping: false, errors: 0
+    };
+    state.recording = r;
+
+    rec.ondataavailable = e => { if (e.data && e.data.size) r.chunks.push(e.data); };
+    rec.onerror = ev => {
+      const msg = (ev && ev.error && (ev.error.name || ev.error.message)) || 'unknown error';
+      addMessage('Recording stopped unexpectedly (' + msg + ').', 'system');
+      finalizeRecording(r);
+    };
     rec.onstop = () => {
-      const blob = new Blob(chunks, { type: mime || 'video/webm' });
-      const ext = mime.includes('mp4') ? 'mp4' : 'webm';
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `classapp-jerry-${state.code || todayCode()}-${new Date().toISOString().replace(/[:.]/g, '-')}.${ext}`;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
-      addMessage(`Recording saved as .${ext}`, 'system');
+      try { saveRecording(r); }
+      catch (e) { addMessage('Could not save recording: ' + (e.message || e.name), 'system'); }
+      finalizeRecording(r);
     };
-    rec.start(2000);
-    const stateRec = { rec, ac, canvas, ctx, raf: null, mime };
-    state.recording = stateRec;
-    const draw = () => {
-      ctx.fillStyle = state.boardBgColor || '#0a0d13'; ctx.fillRect(0, 0, 1280, 720);
-      ctx.fillStyle = state.boardTextColor || '#e9eefb';
-      ctx.font = 'bold 34px -apple-system, "Segoe UI", sans-serif'; ctx.textBaseline = 'top';
-      const boardLine = state.lessonsMode
-        ? ('📺 Lesson: ' + currentLessonTitle())
-        : (state.boardText || ('Live on ' + APP_NAME + ' · ' + (state.code || todayCode())));
-      wrapText(ctx, boardLine, 50, 50, 820, 44);
-      if (hostVideo.readyState >= 2) {
-        drawTile(ctx, hostVideo, 900, 50, 340, hostVideo.classList.contains('mirrored'));
-        ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(912, 348, 90, 30);
-        ctx.fillStyle = '#fff'; ctx.font = 'bold 16px -apple-system, sans-serif'; ctx.fillText('HOST', 924, 368);
-      }
-      const guestArr = Array.from(state.guests.values());
-      const tw = 150, th = 150, gap = 12; let gx = 50; const gy = 720 - th - 50;
-      for (const g of guestArr) {
-        const tile = tilesStrip.querySelector(`.tile[data-guestid="${CSS.escape(g.id)}"]`);
-        const vid = tile ? tile.querySelector('video') : null;
-        if (g.mode !== 'radio' && vid) { drawTile(ctx, vid, gx, gy, tw, vid.classList.contains('mirrored')); }
-        else {
-          const bg = ctx.createLinearGradient(gx, gy, gx + tw, gy + th);
-          bg.addColorStop(0, '#14203a'); bg.addColorStop(1, '#0a0e16');
-          ctx.fillStyle = bg; roundRect(ctx, gx, gy, tw, th, 16); ctx.fill();
-          ctx.fillStyle = '#8b9ec4'; ctx.font = 'bold 40px -apple-system, sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText('📻', gx + tw / 2, gy + th / 2 + 12); ctx.textAlign = 'left';
+    try { rec.start(2000); }
+    catch (e) {
+      addMessage('Could not start recording: ' + (e.message || e.name), 'system');
+      finalizeRecording(r);
+      return;
+    }
+    const loop = ts => {
+      if (r.finalized) return;
+      r.raf = requestAnimationFrame(loop);
+      if (r.lastDraw && ts - r.lastDraw < (1000 / REC_FPS) - 1) return;
+      r.lastDraw = ts;
+      try { renderRecordingFrame(ctx); r.errors = 0; }
+      catch (e) {
+        if (++r.errors > 20) {
+          addMessage('Recording stopped because of a rendering error.', 'system');
+          try { rec.stop(); } catch (er) { finalizeRecording(r); }
         }
-        ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(gx + 8, gy + th - 34, tw - 16, 26);
-        ctx.fillStyle = '#fff'; ctx.font = 'bold 13px -apple-system, sans-serif';
-        ctx.fillText(String(g.name).slice(0, 16), gx + 16, gy + th - 16);
-        gx += tw + gap; if (gx + tw > 1280 - 50) break;
       }
-      ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = '13px -apple-system, sans-serif';
-      ctx.textAlign = 'right'; ctx.fillText(new Date().toLocaleString(), 1230, 20); ctx.textAlign = 'left';
-      stateRec.raf = requestAnimationFrame(draw);
     };
-    draw();
+    r.raf = requestAnimationFrame(loop);
     updateRecordingUI();
-    addMessage(`Recording started (${mime.includes('mp4') ? 'MP4' : 'WebM'}).`, 'system');
+    addMessage('Recording started (' + (mime.indexOf('mp4') >= 0 ? 'MP4' : 'WebM') + '). Keep this tab open.', 'system');
   }
   function stopRecording() {
-    if (!state.recording) return;
-    const { rec, ac, raf } = state.recording;
-    if (raf) cancelAnimationFrame(raf);
-    try { rec.stop(); } catch (e) {}
-    try { if (ac) ac.close(); } catch (e) {}
-    state.recording = null; updateRecordingUI();
-    addMessage('Recording stopped — download starting.', 'system');
-  }
-  function updateRecordingUI() {
-    const on = !!state.recording;
-    recBtn.classList.toggle('on', on); recBtn.textContent = on ? '⏹ Stop' : '⏺ Rec';
-    recIndicator.classList.toggle('active', on);
+    const r = state.recording;
+    if (!r || r.stopping) return;
+    r.stopping = true;
+    updateRecordingUI();
+    try {
+      if (r.rec.state !== 'inactive') r.rec.stop();
+      else finalizeRecording(r);
+    } catch (e) { finalizeRecording(r); }
   }
   recBtn.addEventListener('click', () => { if (state.recording) stopRecording(); else startRecording(); });
 
@@ -2270,10 +2418,8 @@
   }
   function leaveRoom() {
     if (state.recording) {
-      try { state.recording.rec.stop(); } catch (e) {}
-      if (state.recording.raf) cancelAnimationFrame(state.recording.raf);
-      try { if (state.recording.ac) state.recording.ac.close(); } catch (e) {}
-      state.recording = null;
+      try { if (state.recording.rec.state !== 'inactive') state.recording.rec.stop(); } catch (e) {}
+      finalizeRecording(state.recording);
     }
     disableFlash();
     if (state.audioBus) { state.audioBus.stop(); state.audioBus = null; }
@@ -2302,6 +2448,7 @@
     state.soundOn = true; state.facingMode = 'user';
     state.guests.clear(); state.guestViews.clear(); state.requests.clear();
     state.lessonsMode = false; state.activeLessonId = null;
+    state.recording = null;
 
     boardEl.classList.remove('lessons-mode', 'viewer-mode');
     boardLabelText.textContent = 'On‑air board';
