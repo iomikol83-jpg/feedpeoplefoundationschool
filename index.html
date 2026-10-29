@@ -2544,20 +2544,6 @@
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(bx - 6, by - 6, bw + 12, bh + 12);
         ctx.drawImage(img, bx, by, bw, bh);
-        ctx.fillStyle = 'rgba(255,255,255,.85)';
-        ctx.font = 'bold 18px -apple-system, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('📖 ' + (state.book.currentPage + 1) + ' / ' + state.book.pages.length, W / 2, H - 40);
-        ctx.textAlign = 'left';
-        if (Math.floor(Date.now() / 600) % 2 === 0) {
-          ctx.fillStyle = 'rgba(255,77,106,.95)';
-          ctx.beginPath(); ctx.arc(W - 196, 26, 7, 0, Math.PI * 2); ctx.fill();
-        }
-        ctx.fillStyle = 'rgba(255,255,255,.72)';
-        ctx.font = 'bold 13px -apple-system, sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText('REC  ' + new Date().toLocaleTimeString(), W - 50, 18);
-        ctx.textAlign = 'left';
         return;
       }
     }
@@ -2604,16 +2590,6 @@
       gx += tw + gap;
       if (gx + tw > W - 50) break;
     }
-
-    if (Math.floor(Date.now() / 600) % 2 === 0) {
-      ctx.fillStyle = 'rgba(255,77,106,.95)';
-      ctx.beginPath(); ctx.arc(W - 196, 26, 7, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.fillStyle = 'rgba(255,255,255,.72)';
-    ctx.font = 'bold 13px -apple-system, sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText('REC  ' + new Date().toLocaleTimeString(), W - 50, 18);
-    ctx.textAlign = 'left';
   }
 
   function recSupported() {
