@@ -667,7 +667,7 @@
   const LESSONS_KEY    = 'classapp_lessons_v1';
   const SYNC_INTERVAL  = 500;
   const SYNC_PERIODIC  = 2000;
-  const DRIFT_THRESH   = 1.0;   /* tighter play/pause sync */
+  const DRIFT_THRESH   = 1.0;
   const REC_FPS        = 30;
 
   const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -973,7 +973,8 @@
     torchSupported: false, torch: false, screenLight: false, filtersOpen: false,
     isGuest: false, myGuestMode: null, myGuestName: '',
     pendingWaveMode: 'camera', recording: null, facingMode: 'user',
-    lessonsMode: false, lessons: [], activeLessonId: null
+    lessonsMode: false, lessons: [], activeLessonId: null,
+    _recStarting: false
   };
   let boardTimer = null;
 
@@ -1040,7 +1041,6 @@
     try { time = hostYtPlayer.getCurrentTime() || 0; } catch (e) {}
     if (typeof eventState === 'number') ytState = eventState;
     else { try { ytState = hostYtPlayer.getPlayerState(); } catch (e) { ytState = -1; } }
-    /* 1 = playing, 3 = buffering (host intends to play) */
     const playing = (ytState === 1 || ytState === 3);
     broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId, time, playing, ytState });
     hostLastSentAt = Date.now();
@@ -1085,10 +1085,7 @@
       }
       return;
     }
-    if (viewerYtPlayer) {           /* still initializing: queue latest, don't recreate */
-      viewerPendingSync = sync;
-      return;
-    }
+    if (viewerYtPlayer) { viewerPendingSync = sync; return; }
     viewerYtVideoId = sync.videoId;
     viewerYtPlayer = new YT.Player('ytPlayerViewer', {
       videoId: sync.videoId, width:'100%', height:'100%',
@@ -2230,10 +2227,13 @@
     if (r.raf) { cancelAnimationFrame(r.raf); r.raf = null; }
     try { if (r.canvasStream) r.canvasStream.getTracks().forEach(t => t.stop()); } catch (e) {}
     try { if (r.ac && r.ac.state !== 'closed') r.ac.close(); } catch (e) {}
+    try { if (r.canvas && r.canvas.parentNode) r.canvas.parentNode.removeChild(r.canvas); } catch (e) {}
     if (state.recording === r) state.recording = null;
     updateRecordingUI();
   }
   function saveRecording(r) {
+    if (!r || r.saved) return;
+    r.saved = true;
     const chunks = r.chunks || [];
     if (!chunks.length) { addMessage('No recording data was captured.', 'system'); return; }
     const type = r.mime || 'video/webm';
@@ -2251,91 +2251,112 @@
     addMessage('Recording saved as .' + ext + ' (' + (blob.size / 1048576).toFixed(1) + ' MB).', 'system');
   }
   async function startRecording() {
-    if (state.recording) return;
+    if (state.recording || state._recStarting) return;
     if (state.role !== 'host') { addMessage('Only the host can record the live.', 'system'); return; }
     if (!recSupported()) {
       addMessage('Recording is not supported on this browser. Try Chrome on desktop or Android.', 'system');
       return;
     }
-    const canvas = document.createElement('canvas');
-    canvas.width = 1280; canvas.height = 720;
-    const ctx = canvas.getContext('2d', { alpha: false });
-    if (!ctx) { addMessage('Could not start recording — canvas unavailable.', 'system'); return; }
-
-    let ac = null, dest = null;
+    state._recStarting = true;
     try {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) {
-        ac = new AC();
-        dest = ac.createMediaStreamDestination();
-        const sources = [];
-        if (state.localStream) sources.push(state.localStream);
-        state.guests.forEach(g => { if (g.stream) sources.push(g.stream); });
-        for (const s of sources) {
-          try { if (s.getAudioTracks().length) ac.createMediaStreamSource(s).connect(dest); } catch (e) {}
+      const canvas = document.createElement('canvas');
+      canvas.width = 1280; canvas.height = 720;
+      const ctx = canvas.getContext('2d', { alpha: false });
+      if (!ctx) { addMessage('Could not start recording — canvas unavailable.', 'system'); return; }
+
+      // Draw the FIRST frame before captureStream so the video track is live immediately.
+      try { renderRecordingFrame(ctx); } catch (e) { console.error('[Rec] initial draw failed:', e); }
+
+      // Some browsers require the canvas to be in the DOM for captureStream to emit frames.
+      canvas.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:2px;height:2px;opacity:0;pointer-events:none;';
+      document.body.appendChild(canvas);
+
+      let ac = null, dest = null;
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) {
+          ac = new AC();
+          dest = ac.createMediaStreamDestination();
+          const sources = [];
+          if (state.localStream) sources.push(state.localStream);
+          state.guests.forEach(g => { if (g.stream) sources.push(g.stream); });
+          for (const s of sources) {
+            try { if (s.getAudioTracks().length) ac.createMediaStreamSource(s).connect(dest); } catch (e) {}
+          }
+          if (ac.state === 'suspended') {
+            // Don't let a blocked/slow resume hang the whole start.
+            try { await Promise.race([ac.resume(), new Promise(r => setTimeout(r, 500))]); } catch (e) {}
+          }
         }
-        if (ac.state === 'suspended') { try { await ac.resume(); } catch (e) {} }
+      } catch (e) { ac = null; dest = null; }
+
+      let canvasStream = null;
+      try { canvasStream = canvas.captureStream(REC_FPS); } catch (e) { canvasStream = null; }
+      if (!canvasStream || !canvasStream.getVideoTracks().length) {
+        try { if (ac) ac.close(); } catch (e) {}
+        try { canvas.remove(); } catch (e) {}
+        addMessage('Could not capture the canvas for recording.', 'system');
+        return;
       }
-    } catch (e) { ac = null; dest = null; }
+      const tracks = [...canvasStream.getVideoTracks()];
+      if (dest && dest.stream.getAudioTracks().length) tracks.push(...dest.stream.getAudioTracks());
+      const combined = new MediaStream(tracks);
 
-    let canvasStream = null;
-    try { canvasStream = canvas.captureStream(REC_FPS); } catch (e) { canvasStream = null; }
-    if (!canvasStream || !canvasStream.getVideoTracks().length) {
-      try { if (ac) ac.close(); } catch (e) {}
-      addMessage('Could not capture the canvas for recording.', 'system');
-      return;
-    }
-    const tracks = [...canvasStream.getVideoTracks()];
-    if (dest && dest.stream.getAudioTracks().length) tracks.push(...dest.stream.getAudioTracks());
-    const combined = new MediaStream(tracks);
-
-    let rec, mime;
-    try { ({ rec, mime } = createRecorder(combined)); }
-    catch (e) {
-      try { canvasStream.getTracks().forEach(t => t.stop()); } catch (er) {}
-      try { if (ac) ac.close(); } catch (er) {}
-      addMessage('Could not start the recorder: ' + (e.message || e.name || 'unknown'), 'system');
-      return;
-    }
-    const r = {
-      rec, ac, mime, chunks: [], canvasStream, ctx,
-      raf: null, lastDraw: 0, finalized: false, stopping: false, errors: 0
-    };
-    state.recording = r;
-
-    rec.ondataavailable = e => { if (e.data && e.data.size) r.chunks.push(e.data); };
-    rec.onerror = ev => {
-      const msg = (ev && ev.error && (ev.error.name || ev.error.message)) || 'unknown error';
-      addMessage('Recording stopped unexpectedly (' + msg + ').', 'system');
-      finalizeRecording(r);
-    };
-    rec.onstop = () => {
-      try { saveRecording(r); }
-      catch (e) { addMessage('Could not save recording: ' + (e.message || e.name), 'system'); }
-      finalizeRecording(r);
-    };
-    try { rec.start(2000); }
-    catch (e) {
-      addMessage('Could not start recording: ' + (e.message || e.name), 'system');
-      finalizeRecording(r);
-      return;
-    }
-    const loop = ts => {
-      if (r.finalized) return;
-      r.raf = requestAnimationFrame(loop);
-      if (r.lastDraw && ts - r.lastDraw < (1000 / REC_FPS) - 1) return;
-      r.lastDraw = ts;
-      try { renderRecordingFrame(ctx); r.errors = 0; }
+      let rec, mime;
+      try { ({ rec, mime } = createRecorder(combined)); }
       catch (e) {
-        if (++r.errors > 20) {
-          addMessage('Recording stopped because of a rendering error.', 'system');
-          try { rec.stop(); } catch (er) { finalizeRecording(r); }
-        }
+        try { canvasStream.getTracks().forEach(t => t.stop()); } catch (er) {}
+        try { if (ac) ac.close(); } catch (er) {}
+        try { canvas.remove(); } catch (er) {}
+        addMessage('Could not start the recorder: ' + (e.message || e.name || 'unknown'), 'system');
+        return;
       }
-    };
-    r.raf = requestAnimationFrame(loop);
-    updateRecordingUI();
-    addMessage('Recording started (' + (mime.indexOf('mp4') >= 0 ? 'MP4' : 'WebM') + '). Keep this tab open.', 'system');
+      const r = {
+        rec, ac, mime, chunks: [], canvasStream, ctx, canvas,
+        raf: null, lastDraw: 0, finalized: false, stopping: false, saved: false, errors: 0
+      };
+      state.recording = r;
+
+      rec.ondataavailable = e => { if (e.data && e.data.size) r.chunks.push(e.data); };
+      rec.onerror = ev => {
+        const msg = (ev && ev.error && (ev.error.name || ev.error.message)) || 'unknown error';
+        console.error('[Rec] MediaRecorder error:', ev);
+        addMessage('Recording stopped unexpectedly (' + msg + ').', 'system');
+        try { saveRecording(r); } catch (e) {}
+        finalizeRecording(r);
+      };
+      rec.onstop = () => {
+        try { saveRecording(r); }
+        catch (e) { addMessage('Could not save recording: ' + (e.message || e.name), 'system'); }
+        finalizeRecording(r);
+      };
+      try { rec.start(2000); }
+      catch (e) {
+        console.error('[Rec] start() failed:', e);
+        addMessage('Could not start recording: ' + (e.message || e.name), 'system');
+        finalizeRecording(r);
+        return;
+      }
+      const loop = ts => {
+        if (r.finalized) return;
+        r.raf = requestAnimationFrame(loop);
+        if (r.lastDraw && ts - r.lastDraw < (1000 / REC_FPS) - 1) return;
+        r.lastDraw = ts;
+        try { renderRecordingFrame(ctx); r.errors = 0; }
+        catch (e) {
+          console.error('[Rec] Frame render failed:', e);
+          if (++r.errors > 60) {
+            addMessage('Recording stopped due to persistent rendering errors.', 'system');
+            try { rec.stop(); } catch (er) { finalizeRecording(r); }
+          }
+        }
+      };
+      r.raf = requestAnimationFrame(loop);
+      updateRecordingUI();
+      addMessage('Recording started (' + (mime.indexOf('mp4') >= 0 ? 'MP4' : 'WebM') + '). Keep this tab open.', 'system');
+    } finally {
+      state._recStarting = false;
+    }
   }
   function stopRecording() {
     const r = state.recording;
@@ -2343,8 +2364,12 @@
     r.stopping = true;
     updateRecordingUI();
     try {
-      if (r.rec.state !== 'inactive') r.rec.stop();
-      else finalizeRecording(r);
+      if (r.rec.state !== 'inactive') {
+        try { r.rec.requestData(); } catch (e) {}
+        r.rec.stop();
+      } else {
+        finalizeRecording(r);
+      }
     } catch (e) { finalizeRecording(r); }
   }
   recBtn.addEventListener('click', () => { if (state.recording) stopRecording(); else startRecording(); });
@@ -2448,7 +2473,7 @@
     state.soundOn = true; state.facingMode = 'user';
     state.guests.clear(); state.guestViews.clear(); state.requests.clear();
     state.lessonsMode = false; state.activeLessonId = null;
-    state.recording = null;
+    state.recording = null; state._recStarting = false;
 
     boardEl.classList.remove('lessons-mode', 'viewer-mode');
     boardLabelText.textContent = 'On‑air board';
