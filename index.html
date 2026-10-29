@@ -136,9 +136,11 @@
     text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:14px;flex-shrink:0}
   .board-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);flex-shrink:0}
   .board.lessons-mode .board-dot{background:#ff0033;box-shadow:0 0 10px #ff0033}
+  .board.book-mode .board-dot{background:#8b5cff;box-shadow:0 0 10px #8b5cff}
   .board-colors{display:none;gap:6px;margin-left:auto;align-items:center}
   .board-colors.show{display:flex}
   .board.lessons-mode .board-colors{display:none !important}
+  .board.book-mode .board-colors{display:none !important}
   .swatch-label{position:relative;display:flex;align-items:center;gap:5px;cursor:pointer;
     font-size:10px;font-weight:700;letter-spacing:.4px;padding:4px 8px;border-radius:8px;
     background:var(--panel-2);border:1px solid var(--border);color:var(--muted);
@@ -244,6 +246,52 @@
   }
   .lesson-card:hover .remove{opacity:1}
   .lessons-empty-note{font-size:11.5px;color:var(--muted);padding:4px 2px;line-height:1.5}
+
+  /* BOOK PANEL */
+  .book-panel{display:none;flex:1;flex-direction:column;gap:10px;min-height:0}
+  .board.book-mode .book-panel{display:flex}
+  .board.book-mode #boardInput,
+  .board.book-mode #boardView{display:none}
+  .board.book-mode .lessons-panel{display:none !important}
+  .board.lessons-mode .book-panel{display:none !important}
+
+  .book-viewer-wrap{position:relative;width:100%;flex:1;min-height:0;
+    background:#0b0f16;border-radius:14px;overflow:hidden;
+    border:1px solid var(--border);box-shadow:0 12px 40px rgba(0,0,0,.5);
+    display:flex;align-items:center;justify-content:center}
+  .book-page-img{max-width:100%;max-height:100%;object-fit:contain;display:none;
+    background:#fff}
+  .book-page-nav{position:absolute;left:0;right:0;bottom:0;
+    display:flex;align-items:center;justify-content:center;gap:14px;
+    padding:12px;background:linear-gradient(0deg,rgba(0,0,0,.8),transparent)}
+  .book-page-nav button{width:42px;height:42px;border-radius:50%;
+    background:rgba(23,30,44,.92);border:1px solid var(--border);
+    color:#fff;font-size:16px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .16s, transform .12s}
+  .book-page-nav button:hover:not(:disabled){background:rgba(79,140,255,.3)}
+  .book-page-nav button:active:not(:disabled){transform:scale(.94)}
+  .book-page-nav button:disabled{opacity:.3;cursor:default}
+  .book-page-num{font-size:13px;font-weight:700;color:#fff;
+    background:rgba(5,7,11,.8);padding:7px 16px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.12)}
+  .book-actions{display:flex;gap:8px;flex-shrink:0}
+  .book-actions button{padding:10px 16px;border-radius:11px;font-size:13px;
+    font-weight:700;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    transition:background .16s}
+  .book-actions button:hover{background:#1e2637}
+  .book-actions .book-change{background:linear-gradient(120deg,var(--accent),var(--accent-2));
+    color:#fff;border:none}
+  .book-actions .book-change:hover{filter:brightness(1.08)}
+  .book-loading{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:12px;padding:24px;
+    background:rgba(11,15,22,.94);text-align:center}
+  .book-loading .spinner{width:22px;height:22px;border-width:3px}
+  .book-loading-text{font-size:13px;color:var(--muted);max-width:280px;line-height:1.5}
+  .board.viewer-mode .book-actions{display:none}
+
+  .ctrl.book{background:rgba(139,92,255,.14);border-color:rgba(139,92,255,.4);color:#c9b8ff}
+  .ctrl.book.on{background:rgba(139,92,255,.3);border-color:rgba(139,92,255,.7);color:#fff}
 
   .screenlight{position:absolute;inset:0;z-index:8;background:#fff;display:none}
   .screenlight.on{display:block}
@@ -447,6 +495,9 @@
     .lesson-card{width:112px}
     .browse-list{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));max-height:300px}
     .browse-card{padding:22px}
+    .book-page-nav{padding:8px;gap:10px}
+    .book-page-nav button{width:38px;height:38px}
+    .book-page-num{font-size:12px;padding:6px 12px}
   }
   @media (max-width:560px){
     .copy-hint{display:none}
@@ -463,8 +514,8 @@
 <div id="landing" class="screen active">
   <div class="card">
     <div class="logo"><span class="dot"></span><span class="brand">CLA$$APP(JERRY)</span></div>
-    <h1>Go live from your camera.<br><span>Board, YouTube lessons & guests.</span></h1>
-    <p class="sub">Only the admin can start a live. Each day has a fixed Jerry code like <strong style="color:var(--accent)">lunJerry1</strong>. Browse <strong>@misterjerryht</strong> right inside the app and every viewer sees lessons in sync. Up to 8 guests, filters, radio & recording.</p>
+    <h1>Go live from your camera.<br><span>Board, book, lessons & guests.</span></h1>
+    <p class="sub">Only the admin can start a live. Each day has a fixed Jerry code like <strong style="color:var(--accent)">lunJerry1</strong>. Flip a <strong>book</strong> on-air, play synchronized <strong>YouTube lessons</strong>, bring up to 8 guests, filters, radio & recording.</p>
     <button id="btnGoLive" class="btn primary"><span>●</span> Go Live (Admin)</button>
     <div class="divider">or join a live</div>
     <div class="join-row">
@@ -575,6 +626,25 @@
           <div class="lessons-list" id="lessonsList"></div>
         </div>
 
+        <div class="book-panel" id="bookPanel">
+          <div class="book-viewer-wrap" id="bookViewerWrap">
+            <img id="bookPageImg" class="book-page-img" alt="Book page">
+            <div class="book-page-nav" id="bookPageNav">
+              <button id="bookPrev" type="button" title="Previous page">◀</button>
+              <span class="book-page-num" id="bookPageNum">— / —</span>
+              <button id="bookNext" type="button" title="Next page">▶</button>
+            </div>
+            <div class="book-loading" id="bookLoading" style="display:none">
+              <span class="spinner"></span>
+              <div class="book-loading-text" id="bookLoadingText">Loading book…</div>
+            </div>
+          </div>
+          <div class="book-actions" id="bookActions">
+            <button id="bookChangeBtn" class="book-change" type="button">📁 Change book</button>
+            <button id="bookCloseBtn" type="button">✕ Close book</button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -627,7 +697,8 @@
       <button class="ctrl" id="flipBtn" title="Switch front/back camera" style="display:none">🔄</button>
       <button class="ctrl flash" id="flashBtn" title="LED flash / light" style="display:none">🔦 Flash</button>
       <button class="ctrl" id="filtersBtn" title="Video filters" style="display:none">✨</button>
-      <button class="ctrl lessons" id="lessonsBtn" title="Play video lessons from @misterjerryht" style="display:none">📺 Lessons</button>
+      <button class="ctrl lessons" id="lessonsBtn" title="Play video lessons" style="display:none">📺 Lessons</button>
+      <button class="ctrl book" id="bookBtn" title="Flip a book on-air" style="display:none">📖 Book</button>
       <button class="ctrl rec" id="recBtn" title="Record live" style="display:none">⏺ Rec</button>
       <button class="ctrl wave" id="waveBtn" title="Wave to join stage" style="display:none">✋ Wave</button>
       <button class="ctrl" id="guestRadioBtn" title="Radio mode" style="display:none">📻 Radio</button>
@@ -649,6 +720,8 @@
   </aside>
 </div>
 
+<input type="file" id="bookFileInput" accept="application/pdf,image/*" multiple style="display:none">
+
 <script>
 (() => {
   'use strict';
@@ -665,9 +738,9 @@
   const CANVAS_SIZE    = 720;
   const TARGET_FPS     = 30;
   const LESSONS_KEY    = 'classapp_lessons_v1';
-  const SYNC_INTERVAL  = 500;
-  const SYNC_PERIODIC  = 2000;
-  const DRIFT_THRESH   = 1.0;
+  const SYNC_INTERVAL  = 400;
+  const SYNC_PERIODIC  = 1500;
+  const DRIFT_THRESH   = 0.7;
   const REC_FPS        = 30;
 
   const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -914,6 +987,7 @@
   const flashBtn     = $('#flashBtn');
   const filtersBtn   = $('#filtersBtn');
   const lessonsBtn   = $('#lessonsBtn');
+  const bookBtn      = $('#bookBtn');
   const recBtn       = $('#recBtn');
   const waveBtn      = $('#waveBtn');
   const guestRadioBtn= $('#guestRadioBtn');
@@ -950,6 +1024,16 @@
   const lessonsList   = $('#lessonsList');
   const ytSlotHost    = $('#ytSlotHost');
   const ytSlotViewer  = $('#ytSlotViewer');
+  const bookPanel     = $('#bookPanel');
+  const bookPageImg   = $('#bookPageImg');
+  const bookPageNum   = $('#bookPageNum');
+  const bookPrev      = $('#bookPrev');
+  const bookNext      = $('#bookNext');
+  const bookFileInput = $('#bookFileInput');
+  const bookChangeBtn = $('#bookChangeBtn');
+  const bookCloseBtn  = $('#bookCloseBtn');
+  const bookLoading   = $('#bookLoading');
+  const bookLoadingText = $('#bookLoadingText');
 
   const browseModal     = $('#browseModal');
   const browseTabs      = document.querySelectorAll('.browse-tab');
@@ -974,7 +1058,8 @@
     isGuest: false, myGuestMode: null, myGuestName: '',
     pendingWaveMode: 'camera', recording: null, facingMode: 'user',
     lessonsMode: false, lessons: [], activeLessonId: null,
-    _recStarting: false
+    _recStarting: false,
+    book: { pages: [], images: [], currentPage: 0, active: false, generating: false }
   };
   let boardTimer = null;
 
@@ -1032,7 +1117,7 @@
   function hostBroadcastSync(eventState) {
     if (state.role !== 'host') return;
     if (!hostYtPlayer || !hostYtReady) {
-      broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId: null });
+      broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId: null, sentAt: Date.now() });
       hostLastSentAt = Date.now();
       return;
     }
@@ -1042,7 +1127,7 @@
     if (typeof eventState === 'number') ytState = eventState;
     else { try { ytState = hostYtPlayer.getPlayerState(); } catch (e) { ytState = -1; } }
     const playing = (ytState === 1 || ytState === 3);
-    broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId, time, playing, ytState });
+    broadcast({ type:'lesson-sync', on: state.lessonsMode, videoId, time, playing, ytState, sentAt: Date.now() });
     hostLastSentAt = Date.now();
     hostLastState  = ytState;
     hostLastTime   = time;
@@ -1096,7 +1181,9 @@
           viewerYtReady = true; lessonsVideoWrap.classList.add('has-video');
           const finalSync = viewerPendingSync || sync;
           viewerPendingSync = null;
-          if (finalSync.time > 0) { try { e.target.seekTo(finalSync.time, true); } catch (er) {} }
+          const age = finalSync.sentAt ? Math.min(3, (Date.now() - finalSync.sentAt) / 1000) : 0;
+          const t = (finalSync.time || 0) + (finalSync.playing ? age : 0);
+          if (t > 0) { try { e.target.seekTo(t, true); } catch (er) {} }
           if (finalSync.playing) {
             try { e.target.playVideo(); } catch (er) {}
             if (state.soundOn) setTimeout(() => { try { viewerYtPlayer.unMute(); } catch (er) {} }, 300);
@@ -1108,9 +1195,11 @@
   function viewerApplySync(data) {
     if (!data || data.on !== true || !data.videoId) return;
     if (!viewerYtPlayer || !viewerYtReady) { viewerEnsurePlayer(data); return; }
+    const age = data.sentAt ? Math.min(3, (Date.now() - data.sentAt) / 1000) : 0;
+    const targetTime = (data.time || 0) + (data.playing ? age : 0);
     if (data.videoId !== viewerYtVideoId) {
       viewerYtVideoId = data.videoId;
-      try { viewerYtPlayer.loadVideoById(data.videoId, data.time || 0); } catch (e) {}
+      try { viewerYtPlayer.loadVideoById(data.videoId, targetTime); } catch (e) {}
       if (!data.playing) setTimeout(() => { try { viewerYtPlayer.pauseVideo(); } catch (e) {} }, 300);
       return;
     }
@@ -1119,10 +1208,10 @@
     try { curState = viewerYtPlayer.getPlayerState(); } catch (e) {}
     if (data.playing) {
       if (curState !== 1 && curState !== 3) { try { viewerYtPlayer.playVideo(); } catch (e) {} }
-      if (Math.abs(curTime - data.time) > DRIFT_THRESH) { try { viewerYtPlayer.seekTo(data.time, true); } catch (e) {} }
+      if (Math.abs(curTime - targetTime) > DRIFT_THRESH) { try { viewerYtPlayer.seekTo(targetTime, true); } catch (e) {} }
     } else {
       if (curState !== 2 && curState !== 0) { try { viewerYtPlayer.pauseVideo(); } catch (e) {} }
-      if (Math.abs(curTime - data.time) > DRIFT_THRESH) { try { viewerYtPlayer.seekTo(data.time, true); } catch (e) {} }
+      if (Math.abs(curTime - targetTime) > DRIFT_THRESH) { try { viewerYtPlayer.seekTo(targetTime, true); } catch (e) {} }
     }
   }
   function viewerDestroyPlayer() {
@@ -1203,6 +1292,12 @@
     return true;
   }
   function enterLessonsMode() {
+    if (state.book.active) {
+      state.book.active = false;
+      boardEl.classList.remove('book-mode');
+      bookBtn.classList.remove('on'); bookBtn.textContent = '📖 Book';
+      bookPageImg.style.display = 'none';
+    }
     state.lessonsMode = true;
     boardEl.classList.add('lessons-mode');
     boardLabelText.textContent = '📺 Video lessons · ' + CHANNEL_HANDLE;
@@ -1210,7 +1305,7 @@
     renderLessonsList();
     if (state.activeLessonId) playLesson(state.activeLessonId);
     hostBroadcastSync();
-    if (!state.activeLessonId) broadcast({ type:'lesson-sync', on: true, videoId: null });
+    if (!state.activeLessonId) broadcast({ type:'lesson-sync', on: true, videoId: null, sentAt: Date.now() });
     setTimeout(() => lessonsUrlInput.focus(), 100);
   }
   function exitLessonsMode() {
@@ -1219,7 +1314,7 @@
     boardLabelText.textContent = 'On‑air board';
     lessonsBtn.classList.remove('on'); lessonsBtn.textContent = '📺 Lessons';
     if (hostYtPlayer && hostYtReady) { try { hostYtPlayer.pauseVideo(); } catch (e) {} }
-    broadcast({ type:'lesson-sync', on: false, videoId: null });
+    broadcast({ type:'lesson-sync', on: false, videoId: null, sentAt: Date.now() });
     setTimeout(() => boardInput.focus(), 100);
   }
   function toggleLessonsMode() { if (state.lessonsMode) exitLessonsMode(); else enterLessonsMode(); }
@@ -1249,12 +1344,293 @@
     if (!state.lessonsMode) {
       state.lessonsMode = true;
       boardEl.classList.add('lessons-mode');
+      boardEl.classList.remove('book-mode');
+      state.book.active = false;
       boardLabelText.textContent = '📺 Video lessons · ' + CHANNEL_HANDLE;
     }
     if (!data.videoId) return;
     if (!viewerYtPlayer || !viewerYtReady) { viewerEnsurePlayer(data); return; }
     viewerApplySync(data);
   }
+
+  /* ================= BOOK ================= */
+  const BOOK_MAX_WIDTH     = 1200;
+  const BOOK_JPEG_QUALITY  = 0.72;
+  const BOOK_MAX_BYTES     = 220000;
+  const BOOK_PAGE_SEND_MS  = 90;
+
+  let pdfjsLoading = null;
+  function ensurePdfJs() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (pdfjsLoading) return pdfjsLoading;
+    pdfjsLoading = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.onload = () => {
+        try {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          resolve(window.pdfjsLib);
+        } catch (e) { reject(e); }
+      };
+      s.onerror = () => reject(new Error('Could not load PDF engine (are you offline?)'));
+      document.head.appendChild(s);
+    });
+    return pdfjsLoading;
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res(fr.result);
+      fr.onerror = () => rej(fr.error || new Error('File read failed'));
+      fr.readAsDataURL(file);
+    });
+  }
+
+  function resizeToJpeg(dataUrl, maxWidth, quality) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.naturalWidth, h = img.naturalHeight;
+        if (!w || !h) { reject(new Error('Empty image')); return; }
+        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        try { resolve(c.toDataURL('image/jpeg', quality)); }
+        catch (e) { reject(e); }
+      };
+      img.onerror = () => reject(new Error('Image decode failed'));
+      img.src = dataUrl;
+    });
+  }
+
+  async function compressToPage(dataUrl) {
+    let out = await resizeToJpeg(dataUrl, BOOK_MAX_WIDTH, BOOK_JPEG_QUALITY);
+    if (out.length > BOOK_MAX_BYTES) out = await resizeToJpeg(dataUrl, Math.round(BOOK_MAX_WIDTH * 0.75), 0.6);
+    if (out.length > BOOK_MAX_BYTES) out = await resizeToJpeg(dataUrl, Math.round(BOOK_MAX_WIDTH * 0.55), 0.52);
+    return out;
+  }
+
+  async function imageFileToPage(file) {
+    const raw = await readFileAsDataUrl(file);
+    return await compressToPage(raw);
+  }
+
+  async function pdfFileToPages(file, onProgress) {
+    const pdfjsLib = await ensurePdfJs();
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const total = pdf.numPages;
+    const pages = [];
+    for (let i = 1; i <= total; i++) {
+      if (onProgress) onProgress(i, total);
+      const page = await pdf.getPage(i);
+      const baseViewport = page.getViewport({ scale: 1 });
+      const targetWidth = Math.min(BOOK_MAX_WIDTH, baseViewport.width * 2);
+      const scale = targetWidth / baseViewport.width;
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(viewport.width));
+      canvas.height = Math.max(1, Math.round(viewport.height));
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      let dataUrl = canvas.toDataURL('image/jpeg', BOOK_JPEG_QUALITY);
+      if (dataUrl.length > BOOK_MAX_BYTES) {
+        dataUrl = await compressToPage(dataUrl);
+      }
+      pages.push(dataUrl);
+      await new Promise(r => setTimeout(r, 10));
+    }
+    return pages;
+  }
+
+  function showBookLoading(text) {
+    bookLoadingText.textContent = text || 'Loading book…';
+    bookLoading.style.display = 'flex';
+  }
+  function hideBookLoading() { bookLoading.style.display = 'none'; }
+
+  function renderBookPage() {
+    const total = state.book.pages.length;
+    const cur = Math.max(0, Math.min(state.book.currentPage, Math.max(0, total - 1)));
+    state.book.currentPage = cur;
+    const data = state.book.pages[cur];
+    if (data) { bookPageImg.src = data; bookPageImg.style.display = 'block'; }
+    else { bookPageImg.style.display = 'none'; }
+    bookPageNum.textContent = total ? ((cur + 1) + ' / ' + total) : '— / —';
+    bookPrev.disabled = cur <= 0;
+    bookNext.disabled = cur >= total - 1;
+    const canFlip = (state.role === 'host');
+    bookPrev.style.display = canFlip ? '' : 'none';
+    bookNext.style.display = canFlip ? '' : 'none';
+  }
+
+  function showBookPage(index) {
+    if (!state.book.pages.length) return;
+    index = Math.max(0, Math.min(index, state.book.pages.length - 1));
+    if (index === state.book.currentPage) { renderBookPage(); return; }
+    state.book.currentPage = index;
+    renderBookPage();
+    if (state.role === 'host') broadcast({ type: 'book-page', page: index });
+  }
+
+  function enterBookModeHost() {
+    boardEl.classList.add('book-mode');
+    boardEl.classList.remove('lessons-mode');
+    state.lessonsMode = false;
+    state.book.active = true;
+    boardLabelText.textContent = '📖 Book · ' + state.book.pages.length + ' pages';
+    bookBtn.classList.add('on');
+    bookBtn.textContent = '📖 Book ON';
+    renderBookPage();
+  }
+
+  function exitBookModeHost() {
+    if (!state.book.active) return;
+    state.book.active = false;
+    boardEl.classList.remove('book-mode');
+    boardLabelText.textContent = 'On‑air board';
+    bookBtn.classList.remove('on');
+    bookBtn.textContent = '📖 Book';
+    bookPageImg.style.display = 'none';
+    broadcast({ type: 'book-hide' });
+    setTimeout(() => boardInput.focus(), 100);
+  }
+
+  function enterBookModeViewer(total) {
+    state.book.active = true;
+    state.book.pages = new Array(total).fill(null);
+    state.book.images = new Array(total).fill(null);
+    state.book.currentPage = 0;
+    boardEl.classList.add('book-mode');
+    boardEl.classList.remove('lessons-mode');
+    state.lessonsMode = false;
+    boardLabelText.textContent = '📖 Book · ' + total + ' pages';
+    renderBookPage();
+  }
+
+  function exitBookModeViewer() {
+    state.book.active = false;
+    boardEl.classList.remove('book-mode');
+    boardLabelText.textContent = 'On‑air board';
+    bookPageImg.style.display = 'none';
+  }
+
+  async function handleBookFiles(files) {
+    if (state.book.generating) return;
+    const arr = Array.from(files || []);
+    if (!arr.length) return;
+    state.book.generating = true;
+
+    const wasActive = state.book.active;
+    boardEl.classList.add('book-mode');
+    boardEl.classList.remove('lessons-mode');
+    state.lessonsMode = false;
+    boardLabelText.textContent = '📖 Book · preparing…';
+    showBookLoading('Preparing book…');
+
+    try {
+      const allPages = [];
+      for (let i = 0; i < arr.length; i++) {
+        const f = arr[i];
+        const isPdf = (f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
+        if (isPdf) {
+          const pages = await pdfFileToPages(f, (n, total) => {
+            showBookLoading(`Reading "${f.name}" — page ${n} / ${total}`);
+          });
+          allPages.push(...pages);
+        } else if (f.type.startsWith('image/')) {
+          showBookLoading(`Preparing image ${i + 1} / ${arr.length}…`);
+          const page = await imageFileToPage(f);
+          allPages.push(page);
+        }
+      }
+      if (!allPages.length) {
+        throw new Error('empty');
+      }
+      state.book.pages = allPages;
+      state.book.images = allPages.map(url => { const im = new Image(); im.src = url; return im; });
+      state.book.currentPage = 0;
+      enterBookModeHost();
+      addMessage('Book loaded: ' + allPages.length + ' pages. Sending to viewers…', 'system');
+      state.conns.forEach(c => { if (c.open) sendBookToConn(c); });
+    } catch (e) {
+      if (e.message !== 'empty') {
+        console.error('[Book] Failed:', e);
+        addMessage('Could not load book: ' + (e.message || e.name), 'system');
+      } else {
+        addMessage('No book pages were loaded from the selected files.', 'system');
+      }
+      if (wasActive && state.book.pages.length) {
+        boardEl.classList.add('book-mode');
+        boardLabelText.textContent = '📖 Book · ' + state.book.pages.length + ' pages';
+        renderBookPage();
+      } else {
+        boardEl.classList.remove('book-mode');
+        state.book.active = false;
+        bookBtn.classList.remove('on');
+        bookBtn.textContent = '📖 Book';
+        boardLabelText.textContent = 'On‑air board';
+      }
+    } finally {
+      state.book.generating = false;
+      hideBookLoading();
+    }
+  }
+
+  async function sendBookToConn(conn) {
+    if (!state.book.active || !state.book.pages.length) return;
+    if (!conn || !conn.open) return;
+    try { conn.send({ type: 'book-init', total: state.book.pages.length }); } catch (e) { return; }
+    for (let i = 0; i < state.book.pages.length; i++) {
+      if (!conn.open) return;
+      const data = state.book.pages[i];
+      if (!data) continue;
+      try { conn.send({ type: 'book-page-data', index: i, data }); } catch (e) { return; }
+      await new Promise(r => setTimeout(r, BOOK_PAGE_SEND_MS));
+    }
+    if (conn.open) {
+      try { conn.send({ type: 'book-page', page: state.book.currentPage }); } catch (e) {}
+    }
+  }
+
+  bookBtn.addEventListener('click', () => {
+    if (state.role !== 'host') return;
+    if (state.book.active) { exitBookModeHost(); return; }
+    if (state.book.pages.length) {
+      enterBookModeHost();
+      state.conns.forEach(c => { if (c.open) sendBookToConn(c); });
+      return;
+    }
+    bookFileInput.value = '';
+    bookFileInput.click();
+  });
+  bookChangeBtn.addEventListener('click', () => {
+    if (state.role !== 'host') return;
+    bookFileInput.value = '';
+    bookFileInput.click();
+  });
+  bookCloseBtn.addEventListener('click', () => {
+    if (state.role !== 'host') return;
+    exitBookModeHost();
+  });
+  bookFileInput.addEventListener('change', e => {
+    if (e.target.files && e.target.files.length) handleBookFiles(e.target.files);
+  });
+  bookPrev.addEventListener('click', () => { if (state.role === 'host') showBookPage(state.book.currentPage - 1); });
+  bookNext.addEventListener('click', () => { if (state.role === 'host') showBookPage(state.book.currentPage + 1); });
+  document.addEventListener('keydown', e => {
+    if (!state.book.active) return;
+    if (state.role !== 'host') return;
+    if (e.target && /input|textarea/i.test(e.target.tagName)) return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); showBookPage(state.book.currentPage - 1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); showBookPage(state.book.currentPage + 1); }
+  });
 
   /* ================= BROWSE YOUTUBE ================= */
   function fetchWithTimeout(url, ms) {
@@ -1591,6 +1967,23 @@
       }
     } else if (data.type === 'lesson-sync') {
       if (state.role === 'viewer') viewerHandleLessonSync(data);
+    } else if (data.type === 'book-init') {
+      if (state.role === 'viewer') enterBookModeViewer(data.total || 0);
+    } else if (data.type === 'book-page-data') {
+      if (state.role === 'viewer') {
+        state.book.pages[data.index] = data.data;
+        if (!state.book.images) state.book.images = [];
+        const im = new Image(); im.src = data.data;
+        state.book.images[data.index] = im;
+        if (data.index === state.book.currentPage) renderBookPage();
+      }
+    } else if (data.type === 'book-page') {
+      if (state.role === 'viewer') {
+        state.book.currentPage = Math.max(0, Math.min(data.page, state.book.pages.length - 1));
+        renderBookPage();
+      }
+    } else if (data.type === 'book-hide') {
+      if (state.role === 'viewer') exitBookModeViewer();
     } else if (data.type === 'count' && state.role === 'viewer') {
       setViewerCount(data.count);
     } else if (data.type === 'wave' && state.role === 'host') {
@@ -1756,9 +2149,10 @@
     state.guests.clear(); state.guestRelays = []; state.requests.clear();
     state.torch = false; state.screenLight = false; state.filtersOpen = false;
     state.lessonsMode = false; state.lessons = loadLessons(); state.activeLessonId = null;
+    state.book = { pages: [], images: [], currentPage: 0, active: false, generating: false };
 
     stage.classList.add('role-host'); stage.classList.remove('role-viewer');
-    boardEl.classList.remove('viewer-mode');
+    boardEl.classList.remove('viewer-mode', 'book-mode');
 
     state.localStream = raw;
     state.pipeline = new FilterPipeline();
@@ -1786,6 +2180,7 @@
     micBtn.style.display = ''; camBtn.style.display = ''; flipBtn.style.display = '';
     flashBtn.style.display = ''; filtersBtn.style.display = '';
     lessonsBtn.style.display = ''; lessonsBtn.classList.remove('on'); lessonsBtn.textContent = '📺 Lessons';
+    bookBtn.style.display = ''; bookBtn.classList.remove('on'); bookBtn.textContent = '📖 Book';
     recBtn.style.display = ''; waveBtn.style.display = 'none';
     guestRadioBtn.style.display = 'none'; viewRadioBtn.style.display = 'none';
     soundBtn.style.display = ''; listenPrompt.classList.remove('show');
@@ -1832,11 +2227,12 @@
             try { time = hostYtPlayer.getCurrentTime() || 0; } catch (e) {}
             try { ytState = hostYtPlayer.getPlayerState(); } catch (e) {}
             const playing = (ytState === 1 || ytState === 3);
-            conn.send({ type:'lesson-sync', on: true, videoId, time, playing, ytState });
+            conn.send({ type:'lesson-sync', on: true, videoId, time, playing, ytState, sentAt: Date.now() });
           } else {
-            conn.send({ type:'lesson-sync', on: true, videoId: null });
+            conn.send({ type:'lesson-sync', on: true, videoId: null, sentAt: Date.now() });
           }
         }
+        if (state.book.active) sendBookToConn(conn);
       }
       syncCount();
     };
@@ -1864,9 +2260,11 @@
     state.guests.clear(); state.guestViews.clear(); state.requests.clear();
     state.boardTextColor = DEFAULT_TEXT_COLOR; state.boardBgColor = DEFAULT_BG_COLOR;
     state.facingMode = 'user'; state.lessonsMode = false; state.activeLessonId = null;
+    state.book = { pages: [], images: [], currentPage: 0, active: false, generating: false };
 
     stage.classList.add('role-viewer'); stage.classList.remove('role-host');
     boardEl.classList.add('viewer-mode');
+    boardEl.classList.remove('book-mode');
 
     tilesStrip.querySelectorAll('.tile[data-guestid]').forEach(t => t.remove());
 
@@ -1883,6 +2281,7 @@
     micBtn.style.display = 'none'; camBtn.style.display = 'none';
     flipBtn.style.display = 'none'; flashBtn.style.display = 'none';
     filtersBtn.style.display = 'none'; lessonsBtn.style.display = 'none';
+    bookBtn.style.display = 'none'; bookBtn.classList.remove('on'); bookBtn.textContent = '📖 Book';
     recBtn.style.display = 'none';
     waveBtn.style.display = ''; waveBtn.textContent = '✋ Wave'; waveBtn.classList.remove('on');
     guestRadioBtn.style.display = 'none';
@@ -2134,6 +2533,35 @@
     ctx.fillStyle = state.boardBgColor || DEFAULT_BG_COLOR;
     ctx.fillRect(0, 0, W, H);
 
+    // Book mode: draw the current page prominently
+    if (state.book.active && state.book.images && state.book.images[state.book.currentPage]) {
+      const img = state.book.images[state.book.currentPage];
+      if (img && img.complete && img.naturalWidth > 0) {
+        const maxW = W - 120, maxH = H - 160;
+        const s = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+        const bw = img.naturalWidth * s, bh = img.naturalHeight * s;
+        const bx = (W - bw) / 2, by = 80;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(bx - 6, by - 6, bw + 12, bh + 12);
+        ctx.drawImage(img, bx, by, bw, bh);
+        ctx.fillStyle = 'rgba(255,255,255,.85)';
+        ctx.font = 'bold 18px -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('📖 ' + (state.book.currentPage + 1) + ' / ' + state.book.pages.length, W / 2, H - 40);
+        ctx.textAlign = 'left';
+        if (Math.floor(Date.now() / 600) % 2 === 0) {
+          ctx.fillStyle = 'rgba(255,77,106,.95)';
+          ctx.beginPath(); ctx.arc(W - 196, 26, 7, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.fillStyle = 'rgba(255,255,255,.72)';
+        ctx.font = 'bold 13px -apple-system, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('REC  ' + new Date().toLocaleTimeString(), W - 50, 18);
+        ctx.textAlign = 'left';
+        return;
+      }
+    }
+
     ctx.textBaseline = 'top';
     ctx.fillStyle = state.boardTextColor || DEFAULT_TEXT_COLOR;
     ctx.font = 'bold 34px -apple-system, "Segoe UI", sans-serif';
@@ -2263,11 +2691,7 @@
       canvas.width = 1280; canvas.height = 720;
       const ctx = canvas.getContext('2d', { alpha: false });
       if (!ctx) { addMessage('Could not start recording — canvas unavailable.', 'system'); return; }
-
-      // Draw the FIRST frame before captureStream so the video track is live immediately.
       try { renderRecordingFrame(ctx); } catch (e) { console.error('[Rec] initial draw failed:', e); }
-
-      // Some browsers require the canvas to be in the DOM for captureStream to emit frames.
       canvas.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:2px;height:2px;opacity:0;pointer-events:none;';
       document.body.appendChild(canvas);
 
@@ -2284,7 +2708,6 @@
             try { if (s.getAudioTracks().length) ac.createMediaStreamSource(s).connect(dest); } catch (e) {}
           }
           if (ac.state === 'suspended') {
-            // Don't let a blocked/slow resume hang the whole start.
             try { await Promise.race([ac.resume(), new Promise(r => setTimeout(r, 500))]); } catch (e) {}
           }
         }
@@ -2473,9 +2896,10 @@
     state.soundOn = true; state.facingMode = 'user';
     state.guests.clear(); state.guestViews.clear(); state.requests.clear();
     state.lessonsMode = false; state.activeLessonId = null;
+    state.book = { pages: [], images: [], currentPage: 0, active: false, generating: false };
     state.recording = null; state._recStarting = false;
 
-    boardEl.classList.remove('lessons-mode', 'viewer-mode');
+    boardEl.classList.remove('lessons-mode', 'viewer-mode', 'book-mode');
     boardLabelText.textContent = 'On‑air board';
     stage.classList.remove('role-host', 'role-viewer', 'radio', 'filters-open');
     screenlight.classList.remove('on');
@@ -2495,6 +2919,8 @@
     flipBtn.style.display = 'none'; flashBtn.style.display = 'none';
     filtersBtn.style.display = 'none'; lessonsBtn.style.display = 'none';
     lessonsBtn.classList.remove('on'); lessonsBtn.textContent = '📺 Lessons';
+    bookBtn.style.display = 'none'; bookBtn.classList.remove('on'); bookBtn.textContent = '📖 Book';
+    bookPageImg.style.display = 'none'; bookPageNum.textContent = '— / —';
     recBtn.style.display = 'none'; endBtn.textContent = 'End';
     chatToggle.classList.remove('has-unread');
     messagesEl.innerHTML = ''; chatPanel.classList.remove('open');
