@@ -514,8 +514,8 @@
 <div id="landing" class="screen active">
   <div class="card">
     <div class="logo"><span class="dot"></span><span class="brand">CLA$$APP(JERRY)</span></div>
-    <h1>Go live from your camera.<br><span>Board, book, lessons & guests.</span></h1>
-    <p class="sub">Only the admin can start a live. Each day has a fixed Jerry code like <strong style="color:var(--accent)">lunJerry1</strong>. Flip a <strong>book</strong> on-air, play synchronized <strong>YouTube lessons</strong>, bring up to 8 guests, filters, radio & recording.</p>
+    <h1>Go live from your camera.<br><span>Board, book, lessons &amp; guests.</span></h1>
+    <p class="sub">Only the admin can start a live. Each day has a fixed Jerry code like <strong style="color:var(--accent)">lunJerry1</strong>. Flip a <strong>book</strong> on-air, play synchronized <strong>YouTube lessons</strong>, bring up to 8 guests, filters, radio &amp; recording.</p>
     <button id="btnGoLive" class="btn primary"><span>●</span> Go Live (Admin)</button>
     <div class="divider">or join a live</div>
     <div class="join-row">
@@ -1901,7 +1901,7 @@
 
   /* ================= BOARD TEXT ================= */
   function setBoardView(text) {
-    if (!text) { boardView.textContent = 'The host hasn’t written anything yet…'; boardView.classList.add('empty'); }
+    if (!text) { boardView.textContent = 'The host hasn\u2019t written anything yet\u2026'; boardView.classList.add('empty'); }
     else { boardView.textContent = text; boardView.classList.remove('empty'); }
   }
   boardInput.addEventListener('input', () => {
@@ -2533,7 +2533,6 @@
     ctx.fillStyle = state.boardBgColor || DEFAULT_BG_COLOR;
     ctx.fillRect(0, 0, W, H);
 
-    // Book mode: draw the current page prominently
     if (state.book.active && state.book.images && state.book.images[state.book.currentPage]) {
       const img = state.book.images[state.book.currentPage];
       if (img && img.complete && img.naturalWidth > 0) {
@@ -2595,14 +2594,17 @@
   function recSupported() {
     return !!(window.MediaRecorder && window.HTMLCanvasElement && HTMLCanvasElement.prototype.captureStream);
   }
+  /* Prefer native MP4 so no conversion is needed in Safari / recent Chrome */
   function pickRecorderMime() {
     if (!MediaRecorder.isTypeSupported) return '';
     const list = [
+      'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+      'video/mp4;codecs=avc1.4D401E,mp4a.40.2',
+      'video/mp4;codecs=avc1',
+      'video/mp4',
       'video/webm;codecs=vp8,opus',
       'video/webm;codecs=vp9,opus',
-      'video/webm',
-      'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
-      'video/mp4'
+      'video/webm'
     ];
     for (const m of list) { try { if (MediaRecorder.isTypeSupported(m)) return m; } catch (e) {} }
     return '';
@@ -2635,25 +2637,129 @@
     if (state.recording === r) state.recording = null;
     updateRecordingUI();
   }
-  function saveRecording(r) {
+
+  /* ---------- ffmpeg.wasm helpers (lazy-loaded, cached) ---------- */
+  let ffmpegInstance = null;
+  let ffmpegLoadingPromise = null;
+  let conversionActive = false;
+
+  function loadScriptOnce(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src; s.async = true;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load ' + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  async function ensureFfmpeg(onStatus) {
+    if (ffmpegInstance) return ffmpegInstance;
+    if (ffmpegLoadingPromise) return ffmpegLoadingPromise;
+    ffmpegLoadingPromise = (async () => {
+      if (onStatus) onStatus('Loading converter…');
+      if (!window.FFmpegWASM) {
+        await loadScriptOnce('https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js');
+      }
+      if (!window.FFmpegUtil) {
+        await loadScriptOnce('https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js');
+      }
+      const { FFmpeg } = window.FFmpegWASM;
+      const { toBlobURL } = window.FFmpegUtil;
+      const ffmpeg = new FFmpeg();
+      const base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+      if (onStatus) onStatus('Downloading converter (~30 MB, cached)…');
+      await ffmpeg.load({
+        coreURL: await toBlobURL(base + '/ffmpeg-core.js', 'text/javascript'),
+        wasmURL: await toBlobURL(base + '/ffmpeg-core.wasm', 'application/wasm')
+      });
+      ffmpegInstance = ffmpeg;
+      return ffmpeg;
+    })();
+    try { return await ffmpegLoadingPromise; }
+    catch (e) { ffmpegLoadingPromise = null; throw e; }
+  }
+
+  async function convertWebMToMp4(blob, onProgress, onStatus) {
+    const ffmpeg = await ensureFfmpeg(onStatus);
+    const stamp = Date.now();
+    const inName  = 'in_' + stamp + '.webm';
+    const outName = 'out_' + stamp + '.mp4';
+    const data = new Uint8Array(await blob.arrayBuffer());
+    await ffmpeg.writeFile(inName, data);
+    const handler = ({ progress }) => {
+      if (onProgress) onProgress(Math.max(0, Math.min(1, progress || 0)));
+    };
+    ffmpeg.on('progress', handler);
+    try {
+      await ffmpeg.exec([
+        '-i', inName,
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-crf', '23',
+        '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac',
+        '-b:a', '128k',
+        '-movflags', '+faststart',
+        outName
+      ]);
+      const out = await ffmpeg.readFile(outName);
+      return new Blob([out], { type: 'video/mp4' });
+    } finally {
+      ffmpeg.off('progress', handler);
+      try { await ffmpeg.deleteFile(inName); } catch (e) {}
+      try { await ffmpeg.deleteFile(outName); } catch (e) {}
+    }
+  }
+
+  function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { try { a.remove(); } catch (e) {} URL.revokeObjectURL(url); }, 60000);
+  }
+
+  function recordingFilename(ext) {
+    return 'classapp-jerry-' + (state.code || todayCode()) + '-' +
+      new Date().toISOString().replace(/[:.]/g, '-') + '.' + ext;
+  }
+
+  /* Immediate MP4 save: native MP4 downloads instantly, WebM is converted on the fly */
+  async function saveRecording(r) {
     if (!r || r.saved) return;
     r.saved = true;
     const chunks = r.chunks || [];
     if (!chunks.length) { addMessage('No recording data was captured.', 'system'); return; }
     const type = r.mime || 'video/webm';
     const blob = new Blob(chunks, { type });
-    const ext = type.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'classapp-jerry-' + (state.code || todayCode()) + '-' +
-      new Date().toISOString().replace(/[:.]/g, '-') + '.' + ext;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { try { a.remove(); } catch (e) {} URL.revokeObjectURL(url); }, 60000);
-    addMessage('Recording saved as .' + ext + ' (' + (blob.size / 1048576).toFixed(1) + ' MB).', 'system');
+    const isMp4 = /mp4/i.test(blob.type || type);
+
+    if (isMp4) {
+      triggerDownload(blob, recordingFilename('mp4'));
+      addMessage('Saved recording as MP4 (' + (blob.size / 1048576).toFixed(1) + ' MB).', 'system');
+      return;
+    }
+
+    conversionActive = true;
+    try {
+      recBtn.textContent = '⏳ 0%';
+      const mp4Blob = await convertWebMToMp4(
+        blob,
+        p => { recBtn.textContent = '⏳ ' + Math.round(p * 100) + '%'; },
+        () => { recBtn.textContent = '⏳ …'; }
+      );
+      triggerDownload(mp4Blob, recordingFilename('mp4'));
+      addMessage('Saved recording as MP4 (' + (mp4Blob.size / 1048576).toFixed(1) + ' MB).', 'system');
+    } catch (e) {
+      console.error('[MP4 convert]', e);
+      addMessage('MP4 conversion failed — saving as WebM instead. (' + (e.message || e.name) + ')', 'system');
+      triggerDownload(blob, recordingFilename('webm'));
+    } finally {
+      conversionActive = false;
+    }
   }
+
   async function startRecording() {
     if (state.recording || state._recStarting) return;
     if (state.role !== 'host') { addMessage('Only the host can record the live.', 'system'); return; }
@@ -2717,17 +2823,22 @@
       state.recording = r;
 
       rec.ondataavailable = e => { if (e.data && e.data.size) r.chunks.push(e.data); };
-      rec.onerror = ev => {
+      rec.onerror = async ev => {
         const msg = (ev && ev.error && (ev.error.name || ev.error.message)) || 'unknown error';
         console.error('[Rec] MediaRecorder error:', ev);
         addMessage('Recording stopped unexpectedly (' + msg + ').', 'system');
-        try { saveRecording(r); } catch (e) {}
-        finalizeRecording(r);
-      };
-      rec.onstop = () => {
-        try { saveRecording(r); }
+        try { await saveRecording(r); }
         catch (e) { addMessage('Could not save recording: ' + (e.message || e.name), 'system'); }
-        finalizeRecording(r);
+        finally { finalizeRecording(r); }
+      };
+      rec.onstop = async () => {
+        try { await saveRecording(r); }
+        catch (e) {
+          console.error('[Rec save]', e);
+          addMessage('Could not save recording: ' + (e.message || e.name), 'system');
+        } finally {
+          finalizeRecording(r);
+        }
       };
       try { rec.start(2000); }
       catch (e) {
@@ -2995,18 +3106,21 @@
   })();
 
   /* ================= CLEANUP ================= */
-  window.addEventListener('beforeunload', () => {
-    if (state.recording && state.recording.rec.state !== 'inactive') {
-      try { state.recording.rec.stop(); } catch (e) {}
+  window.addEventListener('beforeunload', (e) => {
+    if (conversionActive) {
+      e.preventDefault(); e.returnValue = '';
     }
-    try { state.peer && state.peer.destroy(); } catch (e) {}
+    if (state.recording && state.recording.rec.state !== 'inactive') {
+      try { state.recording.rec.stop(); } catch (err) {}
+    }
+    try { state.peer && state.peer.destroy(); } catch (err) {}
     if (state.localStream) state.localStream.getTracks().forEach(t => t.stop());
     if (state.pipeline) state.pipeline.stop();
     if (state.guestStream) state.guestStream.getTracks().forEach(t => t.stop());
     if (state.guestPipeline) state.guestPipeline.stop();
     if (state.audioBus) state.audioBus.stop();
-    try { hostYtPlayer && hostYtPlayer.destroy(); } catch (e) {}
-    try { viewerYtPlayer && viewerYtPlayer.destroy(); } catch (e) {}
+    try { hostYtPlayer && hostYtPlayer.destroy(); } catch (err) {}
+    try { viewerYtPlayer && viewerYtPlayer.destroy(); } catch (err) {}
   });
 })();
 </script>
