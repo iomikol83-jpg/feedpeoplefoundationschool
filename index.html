@@ -292,6 +292,8 @@
 
   .ctrl.book{background:rgba(139,92,255,.14);border-color:rgba(139,92,255,.4);color:#c9b8ff}
   .ctrl.book.on{background:rgba(139,92,255,.3);border-color:rgba(139,92,255,.7);color:#fff}
+  .ctrl.fmt{background:rgba(79,140,255,.14);border-color:rgba(79,140,255,.4);color:#a6c4ff;font-size:13px}
+  .ctrl.fmt:disabled{opacity:.55;cursor:default}
 
   .screenlight{position:absolute;inset:0;z-index:8;background:#fff;display:none}
   .screenlight.on{display:block}
@@ -699,6 +701,7 @@
       <button class="ctrl" id="filtersBtn" title="Video filters" style="display:none">✨</button>
       <button class="ctrl lessons" id="lessonsBtn" title="Play video lessons" style="display:none">📺 Lessons</button>
       <button class="ctrl book" id="bookBtn" title="Flip a book on-air" style="display:none">📖 Book</button>
+      <button class="ctrl fmt" id="formatBtn" title="Recording orientation" style="display:none">🖥️ Landscape</button>
       <button class="ctrl rec" id="recBtn" title="Record live" style="display:none">⏺ Rec</button>
       <button class="ctrl wave" id="waveBtn" title="Wave to join stage" style="display:none">✋ Wave</button>
       <button class="ctrl" id="guestRadioBtn" title="Radio mode" style="display:none">📻 Radio</button>
@@ -988,6 +991,7 @@
   const filtersBtn   = $('#filtersBtn');
   const lessonsBtn   = $('#lessonsBtn');
   const bookBtn      = $('#bookBtn');
+  const formatBtn    = $('#formatBtn');
   const recBtn       = $('#recBtn');
   const waveBtn      = $('#waveBtn');
   const guestRadioBtn= $('#guestRadioBtn');
@@ -1057,6 +1061,10 @@
     torchSupported: false, torch: false, screenLight: false, filtersOpen: false,
     isGuest: false, myGuestMode: null, myGuestName: '',
     pendingWaveMode: 'camera', recording: null, pendingRecording: null, facingMode: 'user',
+    recordingFormat: (function(){
+      try { return localStorage.getItem('classapp_rec_format') === 'vertical' ? 'vertical' : 'landscape'; }
+      catch (e) { return 'landscape'; }
+    })(),
     lessonsMode: false, lessons: [], activeLessonId: null,
     _recStarting: false,
     book: { pages: [], images: [], currentPage: 0, active: false, generating: false }
@@ -2182,10 +2190,10 @@
     flashBtn.style.display = ''; filtersBtn.style.display = '';
     lessonsBtn.style.display = ''; lessonsBtn.classList.remove('on'); lessonsBtn.textContent = '📺 Lessons';
     bookBtn.style.display = ''; bookBtn.classList.remove('on'); bookBtn.textContent = '📖 Book';
-    recBtn.style.display = ''; waveBtn.style.display = 'none';
+    recBtn.style.display = ''; formatBtn.style.display = ''; waveBtn.style.display = 'none';
     guestRadioBtn.style.display = 'none'; viewRadioBtn.style.display = 'none';
     soundBtn.style.display = ''; listenPrompt.classList.remove('show');
-    updateSoundButton(); updateFlashButton();
+    updateSoundButton(); updateFlashButton(); updateFormatButton();
 
     filtersBar.classList.remove('open'); stage.classList.remove('filters-open');
     buildFilterChips(); selectFilter('natural');
@@ -2284,7 +2292,7 @@
     flipBtn.style.display = 'none'; flashBtn.style.display = 'none';
     filtersBtn.style.display = 'none'; lessonsBtn.style.display = 'none';
     bookBtn.style.display = 'none'; bookBtn.classList.remove('on'); bookBtn.textContent = '📖 Book';
-    recBtn.style.display = 'none';
+    recBtn.style.display = 'none'; formatBtn.style.display = 'none';
     waveBtn.style.display = ''; waveBtn.textContent = '✋ Wave'; waveBtn.classList.remove('on');
     guestRadioBtn.style.display = 'none';
     viewRadioBtn.style.display = ''; viewRadioBtn.classList.remove('on'); viewRadioBtn.textContent = '📻 View';
@@ -2530,6 +2538,28 @@
     if (state.pipeline && state.pipeline.canvas && state.pipeline._running) return state.pipeline.canvas;
     return hostVideo;
   }
+
+  function drawGuestTile(ctx, g, gx, gy, tw) {
+    const th = tw;
+    const tile = tilesStrip.querySelector('.tile[data-guestid="' + CSS.escape(g.id) + '"]');
+    const vid = tile ? tile.querySelector('video') : null;
+    if (g.mode !== 'radio' && vid && sourceSize(vid)) {
+      drawTile(ctx, vid, gx, gy, tw, vid.classList.contains('mirrored'));
+    } else {
+      const bg = ctx.createLinearGradient(gx, gy, gx + tw, gy + th);
+      bg.addColorStop(0, '#14203a'); bg.addColorStop(1, '#0a0e16');
+      ctx.fillStyle = bg; roundRect(ctx, gx, gy, tw, th, 16); ctx.fill();
+      ctx.fillStyle = '#8b9ec4'; ctx.font = 'bold 40px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('📻', gx + tw / 2, gy + th / 2 + 12);
+      ctx.textAlign = 'left';
+    }
+    ctx.fillStyle = 'rgba(0,0,0,.65)';
+    ctx.fillRect(gx + 8, gy + th - 34, tw - 16, 26);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 13px -apple-system, sans-serif';
+    ctx.fillText(String(g.name).slice(0, 16), gx + 16, gy + th - 16);
+  }
+
   function renderRecordingFrame(ctx) {
     const W = ctx.canvas.width, H = ctx.canvas.height;
     ctx.fillStyle = state.boardBgColor || DEFAULT_BG_COLOR;
@@ -2549,6 +2579,11 @@
       }
     }
 
+    if (state.recordingFormat === 'vertical') renderFrameVertical(ctx, W, H);
+    else renderFrameLandscape(ctx, W, H);
+  }
+
+  function renderFrameLandscape(ctx, W, H) {
     ctx.textBaseline = 'top';
     ctx.fillStyle = state.boardTextColor || DEFAULT_TEXT_COLOR;
     ctx.font = 'bold 34px -apple-system, "Segoe UI", sans-serif';
@@ -2567,29 +2602,49 @@
     }
 
     const guestArr = Array.from(state.guests.values());
-    const tw = 150, th = 150, gap = 12;
+    const tw = 150, gap = 12;
     let gx = 50;
-    const gy = H - th - 50;
+    const gy = H - tw - 50;
     for (const g of guestArr) {
-      const tile = tilesStrip.querySelector('.tile[data-guestid="' + CSS.escape(g.id) + '"]');
-      const vid = tile ? tile.querySelector('video') : null;
-      if (g.mode !== 'radio' && vid && sourceSize(vid)) {
-        drawTile(ctx, vid, gx, gy, tw, vid.classList.contains('mirrored'));
-      } else {
-        const bg = ctx.createLinearGradient(gx, gy, gx + tw, gy + th);
-        bg.addColorStop(0, '#14203a'); bg.addColorStop(1, '#0a0e16');
-        ctx.fillStyle = bg; roundRect(ctx, gx, gy, tw, th, 16); ctx.fill();
-        ctx.fillStyle = '#8b9ec4'; ctx.font = 'bold 40px -apple-system, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('📻', gx + tw / 2, gy + th / 2 + 12);
-        ctx.textAlign = 'left';
-      }
-      ctx.fillStyle = 'rgba(0,0,0,.65)';
-      ctx.fillRect(gx + 8, gy + th - 34, tw - 16, 26);
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 13px -apple-system, sans-serif';
-      ctx.fillText(String(g.name).slice(0, 16), gx + 16, gy + th - 16);
+      if (gx + tw > 880) break;
+      drawGuestTile(ctx, g, gx, gy, tw);
       gx += tw + gap;
-      if (gx + tw > W - 50) break;
+    }
+  }
+
+  function renderFrameVertical(ctx, W, H) {
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = state.boardTextColor || DEFAULT_TEXT_COLOR;
+    ctx.font = 'bold 38px -apple-system, "Segoe UI", sans-serif';
+    const boardLine = state.lessonsMode
+      ? ('📺 ' + currentLessonTitle())
+      : (state.boardText || ('Live on ' + APP_NAME + ' · ' + (state.code || todayCode())));
+    wrapText(ctx, boardLine, 40, 40, W - 80, 50);
+
+    const hostSrc = hostVideoSource();
+    const hostSize = 600;
+    const hostX = (W - hostSize) / 2;
+    const hostY = 240;
+    if (sourceSize(hostSrc)) {
+      const mirrored = hostSrc === hostVideo && hostVideo.classList.contains('mirrored');
+      drawTile(ctx, hostSrc, hostX, hostY, hostSize, mirrored);
+      ctx.fillStyle = 'rgba(0,0,0,.65)';
+      ctx.fillRect(hostX + 14, hostY + hostSize - 44, 90, 30);
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 16px -apple-system, sans-serif';
+      ctx.fillText('HOST', hostX + 26, hostY + hostSize - 24);
+    }
+
+    const guestArr = Array.from(state.guests.values());
+    const tw = 150, gap = 12;
+    const gy = hostY + hostSize + 30;
+    const perRow = Math.max(1, Math.floor((W - 80 + gap) / (tw + gap)));
+    let gx = 40, row = 0;
+    for (let i = 0; i < guestArr.length; i++) {
+      const y = gy + row * (tw + gap);
+      if (y + tw > H - 20) break;
+      drawGuestTile(ctx, guestArr[i], gx, y, tw);
+      gx += tw + gap;
+      if ((i + 1) % perRow === 0) { gx = 40; row++; }
     }
   }
 
@@ -2623,7 +2678,6 @@
     throw lastErr || new Error('MediaRecorder could not be created');
   }
 
-  /* ---------- Rec button UI states (Rec / Stop / Save) ---------- */
   function updateRecordingUI() {
     const r = state.recording;
     const p = state.pendingRecording;
@@ -2640,7 +2694,27 @@
       recBtn.textContent = '⏺ Rec';
       recIndicator.classList.remove('active');
     }
+    updateFormatButton();
   }
+
+  function updateFormatButton() {
+    const vertical = state.recordingFormat === 'vertical';
+    formatBtn.textContent = vertical ? '📱 Vertical' : '🖥️ Landscape';
+    const busy = !!state.recording || !!state.pendingRecording || conversionActive;
+    formatBtn.disabled = busy;
+  }
+
+  formatBtn.addEventListener('click', () => {
+    if (state.recording || state.pendingRecording || conversionActive) return;
+    state.recordingFormat = state.recordingFormat === 'vertical' ? 'landscape' : 'vertical';
+    try { localStorage.setItem('classapp_rec_format', state.recordingFormat); } catch (e) {}
+    updateFormatButton();
+    addMessage(
+      'Recording format: ' +
+      (state.recordingFormat === 'vertical' ? '📱 Vertical (720×1280)' : '🖥️ Landscape (1280×720)'),
+      'system'
+    );
+  });
 
   function finalizeRecording(r) {
     if (!r || r.finalized) return;
@@ -2740,7 +2814,6 @@
       new Date().toISOString().replace(/[:.]/g, '-') + '.' + ext;
   }
 
-  /* ---------- Save the recording IN the app (no download yet) ---------- */
   function saveRecording(r) {
     if (!r || r.saved) return;
     r.saved = true;
@@ -2762,7 +2835,6 @@
     updateRecordingUI();
   }
 
-  /* ---------- Download the pending recording as MP4 ---------- */
   async function downloadPendingRecording() {
     const p = state.pendingRecording;
     if (!p || conversionActive) return;
@@ -2811,8 +2883,10 @@
     }
     state._recStarting = true;
     try {
+      const vertical = state.recordingFormat === 'vertical';
       const canvas = document.createElement('canvas');
-      canvas.width = 1280; canvas.height = 720;
+      canvas.width  = vertical ? 720  : 1280;
+      canvas.height = vertical ? 1280 : 720;
       const ctx = canvas.getContext('2d', { alpha: false });
       if (!ctx) { addMessage('Could not start recording — canvas unavailable.', 'system'); return; }
       try { renderRecordingFrame(ctx); } catch (e) { console.error('[Rec] initial draw failed:', e); }
@@ -2905,7 +2979,13 @@
       };
       r.raf = requestAnimationFrame(loop);
       updateRecordingUI();
-      addMessage('Recording started (' + (mime.indexOf('mp4') >= 0 ? 'MP4' : 'WebM') + '). Keep this tab open.', 'system');
+      addMessage(
+        'Recording started (' +
+        (mime.indexOf('mp4') >= 0 ? 'MP4' : 'WebM') + ', ' +
+        (vertical ? '📱 Vertical 720×1280' : '🖥️ Landscape 1280×720') +
+        '). Keep this tab open.',
+        'system'
+      );
     } finally {
       state._recStarting = false;
     }
@@ -3055,6 +3135,7 @@
     filtersBtn.style.display = 'none'; lessonsBtn.style.display = 'none';
     lessonsBtn.classList.remove('on'); lessonsBtn.textContent = '📺 Lessons';
     bookBtn.style.display = 'none'; bookBtn.classList.remove('on'); bookBtn.textContent = '📖 Book';
+    formatBtn.style.display = 'none'; formatBtn.disabled = false;
     bookPageImg.style.display = 'none'; bookPageNum.textContent = '— / —';
     recBtn.style.display = 'none'; endBtn.textContent = 'End';
     chatToggle.classList.remove('has-unread');
