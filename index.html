@@ -1056,7 +1056,7 @@
     filterId: 'natural', filterCss: 'none', filterBeauty: 0,
     torchSupported: false, torch: false, screenLight: false, filtersOpen: false,
     isGuest: false, myGuestMode: null, myGuestName: '',
-    pendingWaveMode: 'camera', recording: null, facingMode: 'user',
+    pendingWaveMode: 'camera', recording: null, pendingRecording: null, facingMode: 'user',
     lessonsMode: false, lessons: [], activeLessonId: null,
     _recStarting: false,
     book: { pages: [], images: [], currentPage: 0, active: false, generating: false }
@@ -2150,6 +2150,7 @@
     state.torch = false; state.screenLight = false; state.filtersOpen = false;
     state.lessonsMode = false; state.lessons = loadLessons(); state.activeLessonId = null;
     state.book = { pages: [], images: [], currentPage: 0, active: false, generating: false };
+    state.pendingRecording = null;
 
     stage.classList.add('role-host'); stage.classList.remove('role-viewer');
     boardEl.classList.remove('viewer-mode', 'book-mode');
@@ -2261,6 +2262,7 @@
     state.boardTextColor = DEFAULT_TEXT_COLOR; state.boardBgColor = DEFAULT_BG_COLOR;
     state.facingMode = 'user'; state.lessonsMode = false; state.activeLessonId = null;
     state.book = { pages: [], images: [], currentPage: 0, active: false, generating: false };
+    state.pendingRecording = null;
 
     stage.classList.add('role-viewer'); stage.classList.remove('role-host');
     boardEl.classList.add('viewer-mode');
@@ -2594,7 +2596,6 @@
   function recSupported() {
     return !!(window.MediaRecorder && window.HTMLCanvasElement && HTMLCanvasElement.prototype.captureStream);
   }
-  /* Prefer native MP4 so no conversion is needed in Safari / recent Chrome */
   function pickRecorderMime() {
     if (!MediaRecorder.isTypeSupported) return '';
     const list = [
@@ -2621,12 +2622,26 @@
     }
     throw lastErr || new Error('MediaRecorder could not be created');
   }
+
+  /* ---------- Rec button UI states (Rec / Stop / Save) ---------- */
   function updateRecordingUI() {
     const r = state.recording;
-    recBtn.classList.toggle('on', !!r);
-    recBtn.textContent = r ? (r.stopping ? '⏳ Saving…' : '⏹ Stop') : '⏺ Rec';
-    recIndicator.classList.toggle('active', !!r && !r.stopping);
+    const p = state.pendingRecording;
+    if (r) {
+      recBtn.classList.add('on');
+      recBtn.textContent = r.stopping ? '⏳ Saving…' : '⏹ Stop';
+      recIndicator.classList.toggle('active', !r.stopping);
+    } else if (p) {
+      recBtn.classList.add('on');
+      recBtn.textContent = '💾 Save';
+      recIndicator.classList.remove('active');
+    } else {
+      recBtn.classList.remove('on');
+      recBtn.textContent = '⏺ Rec';
+      recIndicator.classList.remove('active');
+    }
   }
+
   function finalizeRecording(r) {
     if (!r || r.finalized) return;
     r.finalized = true;
@@ -2725,43 +2740,70 @@
       new Date().toISOString().replace(/[:.]/g, '-') + '.' + ext;
   }
 
-  /* Immediate MP4 save: native MP4 downloads instantly, WebM is converted on the fly */
-  async function saveRecording(r) {
+  /* ---------- Save the recording IN the app (no download yet) ---------- */
+  function saveRecording(r) {
     if (!r || r.saved) return;
     r.saved = true;
     const chunks = r.chunks || [];
     if (!chunks.length) { addMessage('No recording data was captured.', 'system'); return; }
     const type = r.mime || 'video/webm';
     const blob = new Blob(chunks, { type });
-    const isMp4 = /mp4/i.test(blob.type || type);
+    state.pendingRecording = {
+      blob,
+      isMp4: /mp4/i.test(blob.type || type)
+    };
+    const sizeMB = (blob.size / 1048576).toFixed(1);
+    addMessage(
+      state.pendingRecording.isMp4
+        ? 'Recording ready (' + sizeMB + ' MB). Click 💾 Save to download as MP4.'
+        : 'Recording ready (' + sizeMB + ' MB). Click 💾 Save — it will be converted to MP4.',
+      'system'
+    );
+    updateRecordingUI();
+  }
 
-    if (isMp4) {
-      triggerDownload(blob, recordingFilename('mp4'));
-      addMessage('Saved recording as MP4 (' + (blob.size / 1048576).toFixed(1) + ' MB).', 'system');
-      return;
-    }
-
+  /* ---------- Download the pending recording as MP4 ---------- */
+  async function downloadPendingRecording() {
+    const p = state.pendingRecording;
+    if (!p || conversionActive) return;
     conversionActive = true;
     try {
-      recBtn.textContent = '⏳ 0%';
-      const mp4Blob = await convertWebMToMp4(
-        blob,
-        p => { recBtn.textContent = '⏳ ' + Math.round(p * 100) + '%'; },
-        () => { recBtn.textContent = '⏳ …'; }
-      );
+      let mp4Blob;
+      if (p.isMp4) {
+        recBtn.textContent = '⏳ Saving…';
+        mp4Blob = p.blob;
+      } else {
+        recBtn.textContent = '⏳ 0%';
+        mp4Blob = await convertWebMToMp4(
+          p.blob,
+          prog => { recBtn.textContent = '⏳ ' + Math.round(prog * 100) + '%'; },
+          () => { recBtn.textContent = '⏳ …'; }
+        );
+      }
       triggerDownload(mp4Blob, recordingFilename('mp4'));
-      addMessage('Saved recording as MP4 (' + (mp4Blob.size / 1048576).toFixed(1) + ' MB).', 'system');
+      addMessage('Saved as MP4 (' + (mp4Blob.size / 1048576).toFixed(1) + ' MB).', 'system');
+      state.pendingRecording = null;
     } catch (e) {
       console.error('[MP4 convert]', e);
-      addMessage('MP4 conversion failed — saving as WebM instead. (' + (e.message || e.name) + ')', 'system');
-      triggerDownload(blob, recordingFilename('webm'));
+      try {
+        triggerDownload(p.blob, recordingFilename('webm'));
+        addMessage('MP4 conversion failed — saved as WebM. (' + (e.message || e.name) + ')', 'system');
+      } catch (er) {
+        addMessage('Could not save recording: ' + (er.message || er.name), 'system');
+      }
+      state.pendingRecording = null;
     } finally {
       conversionActive = false;
+      updateRecordingUI();
     }
   }
 
   async function startRecording() {
     if (state.recording || state._recStarting) return;
+    if (state.pendingRecording) {
+      addMessage('Save or dismiss the previous recording first.', 'system');
+      return;
+    }
     if (state.role !== 'host') { addMessage('Only the host can record the live.', 'system'); return; }
     if (!recSupported()) {
       addMessage('Recording is not supported on this browser. Try Chrome on desktop or Android.', 'system');
@@ -2823,16 +2865,16 @@
       state.recording = r;
 
       rec.ondataavailable = e => { if (e.data && e.data.size) r.chunks.push(e.data); };
-      rec.onerror = async ev => {
+      rec.onerror = ev => {
         const msg = (ev && ev.error && (ev.error.name || ev.error.message)) || 'unknown error';
         console.error('[Rec] MediaRecorder error:', ev);
         addMessage('Recording stopped unexpectedly (' + msg + ').', 'system');
-        try { await saveRecording(r); }
+        try { saveRecording(r); }
         catch (e) { addMessage('Could not save recording: ' + (e.message || e.name), 'system'); }
         finally { finalizeRecording(r); }
       };
-      rec.onstop = async () => {
-        try { await saveRecording(r); }
+      rec.onstop = () => {
+        try { saveRecording(r); }
         catch (e) {
           console.error('[Rec save]', e);
           addMessage('Could not save recording: ' + (e.message || e.name), 'system');
@@ -2882,7 +2924,12 @@
       }
     } catch (e) { finalizeRecording(r); }
   }
-  recBtn.addEventListener('click', () => { if (state.recording) stopRecording(); else startRecording(); });
+
+  recBtn.addEventListener('click', () => {
+    if (state.recording) { stopRecording(); return; }
+    if (state.pendingRecording) { downloadPendingRecording(); return; }
+    startRecording();
+  });
 
   /* ================= SHARE ================= */
   function setupShare(code) {
@@ -2956,6 +3003,7 @@
       try { if (state.recording.rec.state !== 'inactive') state.recording.rec.stop(); } catch (e) {}
       finalizeRecording(state.recording);
     }
+    state.pendingRecording = null;
     disableFlash();
     if (state.audioBus) { state.audioBus.stop(); state.audioBus = null; }
     state.calls.forEach(c => { try { c.close(); } catch (e) {} });
